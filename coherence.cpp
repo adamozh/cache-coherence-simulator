@@ -1,12 +1,16 @@
+#include "memory.cpp"
+#include "processor.cpp"
 #include <iostream>
 #include <string>
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
     if (argc != 6) {
-        cerr << "Usage: ./coherence <protocol> <path-to-benchmark-trace> <cache-size> <associativity> <block-size>" << endl;
+        cerr << "Usage: ./coherence <protocol> <path-to-benchmark-trace> <cache-size> "
+                "<associativity> <block-size>"
+             << endl;
         return 1;
     }
 
