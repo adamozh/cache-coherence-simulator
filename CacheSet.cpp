@@ -1,11 +1,11 @@
 #include "CacheSet.hpp"
 
-CacheSet::CacheSet(unsigned int maxSize){
+CacheSet::CacheSet(size_t maxSize){
     this->maxSize = maxSize;
     this->currentSize = 0;
 }
 
-bool CacheSet::checkCacheLine(unsigned int tag){  
+bool CacheSet::checkCacheLine(size_t tag){  
     // TODO: there is a difference between read and write
     // iterate through the link list to check if it exist
     // return std::find(cacheSet.begin(), cacheSet.end(),
@@ -16,7 +16,7 @@ bool CacheSet::checkCacheLine(unsigned int tag){
     }) != cacheSet.end();
 }
 
-void CacheSet::invalidateCacheLine(unsigned int tag){
+void CacheSet::invalidateCacheLine(size_t tag){
     // invalidate the cacheline and remove out of the linked list
     auto it = std::find_if(cacheSet.begin(), cacheSet.end(),
     [tag](const CacheLine& cl) {
@@ -28,7 +28,7 @@ void CacheSet::invalidateCacheLine(unsigned int tag){
     }
 }
 
-bool CacheSet::readCacheLine(unsigned int tag){
+bool CacheSet::readCacheLine(size_t tag){
     // remove from the current item and add it to the back fo the list
     auto it = std::find_if(cacheSet.begin(), cacheSet.end(),
     [tag](const CacheLine& cl) {
@@ -46,7 +46,7 @@ bool CacheSet::readCacheLine(unsigned int tag){
 }
 
 
-bool Cache::updateCacheLine(unsigned int tag, unsigned int state){
+bool Cache::updateCacheLine(size_t tag, size_t state){
     // update the cacheline
     // need to pop out the cache and then update it then add it to the end of the list
     for (auto it = cacheSet.begin(); it != cacheSet.end(); ++it) {

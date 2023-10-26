@@ -1,6 +1,6 @@
 #include "cache.hpp"
 
-CacheLine::CacheLine(unsigned int tag, unsigned int state){
+CacheLine::CacheLine(size_t tag, size_t state){
     this->tag = tag;
     this->state = state;
 }

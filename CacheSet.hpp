@@ -1,21 +1,21 @@
 #include "Cache.hpp"
 
 class CacheSet {
-    unsigned int maxSize;
-    unsigned int currentSize;
+    size_t maxSize;
+    size_t currentSize;
     std::list<CacheLine> cacheSet;
     public:
-        CacheSet(unsigned int maxSize){};
+        CacheSet(size_t maxSize){};
 
-        bool checkCacheLine(unsigned int tag){};
+        bool checkCacheLine(size_t tag){};
 
-        void invalidateCacheLine(unsigned int tag){};
+        void invalidateCacheLine(size_t tag){};
 
-        void addCacheLine(unsigned int tag,unsigned int state){};
+        void addCacheLine(size_t tag,size_t state){};
 
-        bool readCacheLine(unsigned int tag){};
+        bool readCacheLine(size_t tag){};
 
-        bool updateCacheLine(unsigned int tag, unsigned int state){};
+        bool updateCacheLine(size_t tag, size_t state){};
         
     friend Cache;
 };
