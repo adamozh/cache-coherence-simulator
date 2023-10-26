@@ -1,5 +1,25 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <list>
+#include "CacheLine.hpp"
+#include "CacheSet.hpp"
+#include "Cache.hpp"
+
+
+/**
+    Generate the following output
+    1. Overall Execution Cycle (outside)  outside 
+    2. Number of compute cycles per core (processor) 
+    3. Number of load/store instruction per core (processor) -- inside processor
+    4. Number of idle cycles (processor) 
+    5. Data cache miss rate for each core (processor)
+    6. Amount of Data traffic in bytes on the bus (bus) 
+    7. Number of invalidations or updates on the bus (bus) 
+    8. Distribution of accesses to private data vs shared data
+*/
+// create a cacheline class
+// create a cache class -- contains many cacheline class
 
 using namespace std;
 
@@ -37,6 +57,7 @@ int main(int argc, char* argv[]) {
     cout << "Block Size: " << blockSize << endl;
 
     // Your logic here for implementing the cache coherence protocols
+
 
     return 0;
 }
