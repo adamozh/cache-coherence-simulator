@@ -1,55 +1,62 @@
+#include "processor.hpp"
+#include "protocol.hpp"
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
 using namespace std;
 
-enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY };
+Processor::Processor(unsigned int cacheSize, unsigned int associativity, unsigned int blockSize,
+                     shared_ptr<Bus> bus, shared_ptr<Protocol> protocol)
+    : state(FREE), protocol(protocol), bus(bus) {
+    l1Data = make_shared<Cache>(cacheSize, associativity, blockSize);
+}
 
-class Processor {
-    unsigned int id;
-    ProcessorState state;
-    unsigned int timeLeft;
-
-    Cache l1Data;
-
-  public:
-    Processor(unsigned int id, unsigned int cacheSize, unsigned int associativity,
-              unsigned int blockSize)
-        : id(id), l1Data(cacheSize, associativity, blockSize) {}
-
-    void exeute(unsigned int type, int value) {
-        switch (type) {
-        case 0: // load
-            // first do a read to the current cache line
-            bool isHit = l1Data.checkCacheLine(value);
-            // if true, means cache hit. can immediately run the next instruction
-            // if false, means cache miss. stall
-            if (isHit) {
-                state = FREE;
-                timeLeft = 0;
-            } else {
-                state = LOAD;
-                timeLeft = 100;
-            }
-            break;
-        case 1: // store
-            // first do a write to the current cache line
-            bool isHit = l1Data.checkCacheLine(value);
-            if (isHit) {
-                state = FREE;
-                timeLeft = 0;
-            } else {
-                state = LOAD;
-                timeLeft = 100;
-            }
-            break;
-        case 2: // non-memory instructions
-            state = NON_MEMORY;
-            timeLeft = value;
-            break;
-        default:
-            throw logic_error("invalid instruction type");
+void Processor::executeCycle() {
+    // TODO: read instructions line by line here
+    switch (state) {
+    case FREE:
+        // call execute(); with instruction type and value
+        break;
+    case STORE:
+        if (currRequest->isDone) {
+            state = FREE;
         }
+        cycles++;
+        break;
+    case LOAD:
+        if (currRequest->isDone) {
+            state = FREE;
+        }
+        cycles++;
+        break;
+    case NON_MEMORY:
+        if (!nonMemCounter) {
+            state = FREE;
+        }
+        cycles++;
+        break;
     }
-};
+}
+
+void Processor::execute(unsigned int type, unsigned int value) {
+    switch (type) {
+    case 0: // load
+        protocol->onLoad(value, bus, l1Data);
+        break;
+    case 1: // store
+        protocol->onStore(value, bus, l1Data);
+        state = STORE;
+    case 2: // non-memory instructions
+        state = NON_MEMORY;
+        nonMemCounter = value;
+        break;
+    default:
+        throw logic_error("invalid instruction type");
+    }
+}
+
+void Processor::issueBusTransaction() {}
+
+void Processor::invalidateCache() {}

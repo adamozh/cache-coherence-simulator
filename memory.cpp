@@ -4,6 +4,9 @@
 
 using namespace std;
 
+/**
+ * Useless for now
+ */
 class Memory {
   private:
     unsigned int size;

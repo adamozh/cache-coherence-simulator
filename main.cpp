@@ -1,6 +1,8 @@
+#include "bus.cpp"
 #include "memory.cpp"
 #include "processor.cpp"
 #include <iostream>
+#include <memory>
 #include <string>
 
 using namespace std;
@@ -41,6 +43,20 @@ int main(int argc, char *argv[]) {
     cout << "Block Size: " << blockSize << endl;
 
     // Your logic here for implementing the cache coherence protocols
+
+    int numProcessors;
+    // TODO: Initialize a shared bus
+    // shared_ptr<Bus> bus = make_shared();
+    // TODO: Initialize processors with bus
+
+    unsigned int clock = 0;
+    /*
+    while (true) {
+        for each
+        processor:
+            p.executeCycle()
+    }
+    */
 
     return 0;
 }
