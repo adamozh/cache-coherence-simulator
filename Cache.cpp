@@ -1,9 +1,14 @@
 #include "Cache.hpp"
 Cache::Cache(size_t cacheSize, size_t associativity, size_t blockSize){
+    cout << "This is the cacheSize " << cacheSize << endl;
+    cout << "This is the associativity " << associativity << endl;
+    cout << "This is the blockSize " << blockSize << endl;
     this->associativity = associativity;
     this->blockSize = blockSize;
     this->cache = std::vector<CacheSet>(cacheSize/(associativity*blockSize), CacheSet(associativity));
     this->cacheSize = cacheSize/(associativity*blockSize); //TODO: rename this variable
+    cout << "This is the size of the cache in terms of cacheset " << this->cache.size() << endl;
+    cout << "This is the size of the cacheset " << this->cache[1].maxSize << endl;
 }
 
 size_t Cache::getIndex(size_t address) {
@@ -12,7 +17,7 @@ size_t Cache::getIndex(size_t address) {
 }
 
 size_t Cache::getTag(size_t address) {
-    return (address/blockSize) / cacheSize;
+    return (address/(blockSize*cacheSize));
 }
 
 bool Cache::checkCacheLine(size_t address){
