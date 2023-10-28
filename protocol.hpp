@@ -1,8 +1,9 @@
 #pragma once
-
 #include "bus.hpp"
 #include "cache.hpp"
 #include <memory>
+
+using namespace std;
 
 class Protocol {
   public:

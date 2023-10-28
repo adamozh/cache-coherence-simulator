@@ -1,6 +1,7 @@
-#include "bus.cpp"
+#include "bus.hpp"
+#include "bus_impl.hpp"
 #include "memory.cpp"
-#include "processor.cpp"
+#include "processor.hpp"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -45,9 +46,10 @@ int main(int argc, char *argv[]) {
     // Your logic here for implementing the cache coherence protocols
 
     int numProcessors;
-    // TODO: Initialize a shared bus
-    // shared_ptr<Bus> bus = make_shared();
+    shared_ptr<Bus> bus = make_shared<BusImpl>();
     // TODO: Initialize processors with bus
+    for (int i = 0; i < numProcessors; i++) {
+    }
 
     unsigned int clock = 0;
     /*

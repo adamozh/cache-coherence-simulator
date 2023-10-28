@@ -1,7 +1,11 @@
 #pragma once
 
 class Request {
-  public:
-    bool isDone = false;
+  private:
+    bool done = false;
     unsigned int countdown = 0;
+
+  public:
+    bool isDone() { return done; };
+    void decrement() { countdown--; }
 };

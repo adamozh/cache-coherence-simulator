@@ -1,5 +1,7 @@
 #include "mesi.hpp"
 
+using namespace std;
+
 void MESIProtocol::onLoad(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) {
     // MESI-specific logic
     /*
