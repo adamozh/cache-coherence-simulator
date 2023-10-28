@@ -25,6 +25,8 @@ class CacheSet {
     bool readCacheLine(size_t tag);
 
     bool updateCacheLine(size_t tag, size_t state);
+
+    friend class Cache;
 };
 
 #endif // CACHESET_H
