@@ -33,7 +33,7 @@
 coherence
 
 # Benchmark folders
-./blackscholes
-./bodytrack
-./fluidanimate
+blackscholes/
+bodytrack/
+fluidanimate/
 
