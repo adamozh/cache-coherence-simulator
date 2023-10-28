@@ -31,3 +31,9 @@
 *.out
 *.app
 coherence
+
+# Benchmark folders
+./blackscholes
+./bodytrack
+./fluidanimate
+
