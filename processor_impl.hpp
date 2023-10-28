@@ -6,6 +6,7 @@
 #include "protocol.hpp"
 #include "request.hpp"
 #include <memory>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -14,6 +15,7 @@ enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
 
 class ProcessorImpl : public Processor {
   private:
+    vector<pair<unsigned int, unsigned int>> stream;
     shared_ptr<Protocol> protocol;
     shared_ptr<Cache> l1Data;
     shared_ptr<Bus> bus;
@@ -30,8 +32,8 @@ class ProcessorImpl : public Processor {
     void execute(unsigned int type, unsigned int value);
 
   public:
-    ProcessorImpl(unsigned int cacheSize, unsigned int associativity, unsigned int blockSize,
-                  shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
+    ProcessorImpl(string filepath, unsigned int cacheSize, unsigned int associativity,
+                  unsigned int blockSize, shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
     void executeCycle();
     void invalidateCache();
     bool isDone();

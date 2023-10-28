@@ -1,17 +1,32 @@
 #include "processor_impl.hpp"
 #include "protocol.hpp"
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-ProcessorImpl::ProcessorImpl(unsigned int cacheSize, unsigned int associativity,
+ProcessorImpl::ProcessorImpl(string filepath, unsigned int cacheSize, unsigned int associativity,
                              unsigned int blockSize, shared_ptr<Bus> bus,
                              shared_ptr<Protocol> protocol)
     : protocol(protocol), bus(bus) {
     l1Data = make_shared<Cache>(cacheSize, associativity, blockSize);
+    ifstream file(filepath); // just let runtime exception throw if fail
+    string line;
+    unsigned int type, value;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        ss >> type;
+        string s;
+        ss >> s;
+        if (s.starts_with("0x")) s = s.substr(2);
+        stringstream(s) >> hex >> value;
+        stream.push_back(make_pair(type, value));
+    }
 }
 
 void ProcessorImpl::executeCycle() {
