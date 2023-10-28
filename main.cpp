@@ -2,6 +2,7 @@
 #include "bus_impl.hpp"
 #include "memory.cpp"
 #include "processor.hpp"
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -43,10 +44,22 @@ int main(int argc, char *argv[]) {
     cout << "Associativity: " << associativity << endl;
     cout << "Block Size: " << blockSize << endl;
 
-    // Your logic here for implementing the cache coherence protocols
+    // Read folder of benchmark name
+    filesystem::path folderPath(inputFilePath);
+    if (!filesystem::exists(folderPath)) {
+        cout << "folder does not exist" << endl;
+        return 1;
+    }
+    if (!filesystem::is_directory(folderPath)) {
+        cout << "path is not a directory" << endl;
+        return 1;
+    }
+    for (const auto &entry : filesystem::directory_iterator(folderPath)) {
+        cout << entry.path().string() << endl;
+    }
 
     int numProcessors;
-    shared_ptr<Bus> bus = make_shared<BusImpl>();
+    BusImpl bus = BusImpl();
     // TODO: Initialize processors with bus
     for (int i = 0; i < numProcessors; i++) {
     }
