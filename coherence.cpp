@@ -1,10 +1,12 @@
-#include "Cache.hpp"
-#include "CacheLine.hpp"
-#include "CacheSet.hpp"
 #include "bus.hpp"
 #include "bus_impl.hpp"
+#include "cache.hpp"
+#include "cache_line.hpp"
+#include "cache_set.hpp"
 #include "memory.cpp"
+#include "mesi.hpp"
 #include "processor.hpp"
+#include "processor_impl.hpp"
 #include <filesystem>
 #include <iostream>
 #include <list>
@@ -73,24 +75,32 @@ int main(int argc, char *argv[]) {
         cout << "path is not a directory" << endl;
         return 1;
     }
-    for (const auto &entry : filesystem::directory_iterator(folderPath)) {
-        cout << entry.path().string() << endl;
-    }
 
-    int numProcessors;
-    BusImpl bus = BusImpl();
-    // TODO: Initialize processors with bus
-    for (int i = 0; i < numProcessors; i++) {
+    shared_ptr<Bus> bus = make_shared<BusImpl>();
+    vector<shared_ptr<Processor>> processors;
+    shared_ptr<Protocol> protocolPtr =
+        make_shared<MESIProtocol>(); // update this to initialise other protocols
+
+    for (const auto &entry : filesystem::directory_iterator(folderPath)) {
+        string filepath = entry.path().string();
+        shared_ptr<Processor> processor =
+            make_shared<ProcessorImpl>(filepath, cacheSize, associativity, blockSize, bus, nullptr);
+        processors.push_back(processor);
     }
 
     unsigned int clock = 0;
-    /*
     while (true) {
-        for each
-        processor:
-            p.executeCycle()
+        for (int i = 0; i < processors.size(); i++) {
+            processors[i]->executeCycle();
+        }
+        bool isDone = all_of(processors.begin(), processors.end(),
+                             [&](shared_ptr<Processor> p) { return p->isDone(); });
+        if (isDone) {
+            break;
+        } else {
+            clock++;
+        }
     }
-    */
 
     return 0;
 }
