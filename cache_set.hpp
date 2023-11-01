@@ -26,6 +26,8 @@ class CacheSet {
 
     bool updateCacheLine(size_t tag, size_t state);
 
+    size_t checkCacheLineState(size_t tag);
+
     friend class Cache;
 };
 

@@ -69,3 +69,12 @@ bool CacheSet::updateCacheLine(size_t tag, size_t state) {
     // Cache line not found
     return false;
 }
+
+size_t CacheSet::checkCacheLineState(size_t tag) {
+    for (const auto& cacheLine : cacheSet) {
+        if (cacheLine.tag == tagToFind) {
+            return cacheLine.state;
+        }
+    }
+    return 0; // this will be similar to invalid state
+}

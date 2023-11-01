@@ -51,3 +51,9 @@ bool Cache::updateCacheLine(size_t address, size_t state) {
     size_t tag = getTag(address);
     return cache[index].updateCacheLine(tag, state);
 }
+
+size_t Cache::checkCacheLineState(size_t address) {
+    size_t index = getIndex(address);
+    size_t tag = getTag(address);
+    return cache[index].checkCacheLineState(tag);
+}
