@@ -57,3 +57,17 @@ size_t Cache::checkCacheLineState(size_t address) {
     size_t tag = getTag(address);
     return cache[index].checkCacheLineState(tag);
 }
+
+CacheLine Cache::getLRUCacheLine(size_t address)
+{
+    size_t index = getIndex(address);
+
+    if (!cache[index].empty()) {
+        CacheLine LRUCacheline = cache[index].front();
+        return CacheLine;
+    }
+    else {
+        std::cout << "The list is empty." << std::endl;
+    }
+    return CacheLine();//TODO: ask adam about this
+}

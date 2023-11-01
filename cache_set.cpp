@@ -78,3 +78,8 @@ size_t CacheSet::checkCacheLineState(size_t tag) {
     }
     return 0; // this will be similar to invalid state
 }
+
+bool CacheSet::checkCacheSetFull()
+{
+    return cacheSet.size() == maxSize;
+}

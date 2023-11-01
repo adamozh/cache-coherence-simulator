@@ -28,6 +28,8 @@ class CacheSet {
 
     size_t checkCacheLineState(size_t tag);
 
+    bool checkCacheSetFull();
+
     friend class Cache;
 };
 
