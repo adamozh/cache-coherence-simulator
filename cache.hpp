@@ -37,6 +37,8 @@ class Cache {
     bool readCacheLine(size_t address);
 
     bool updateCacheLine(size_t address, size_t state);
+
+    size_t checkCacheLineState(size_t address);
 };
 
 #endif // CACHE_H
