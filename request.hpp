@@ -3,9 +3,13 @@
 class Request {
   private:
     bool done = false;
+    bool isModified;
     unsigned int countdown = 0;
-    unsigned int address = Null;
+    unsigned int pid;
+
   public:
-    bool isDone() { return done; };
-    void decrement() { countdown--; }
+    Request(int pid);
+    bool isDone();
+    void decrement();
+    void setCountdown(unsigned int countdown);
 };

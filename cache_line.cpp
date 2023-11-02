@@ -1,3 +1,8 @@
 #include "cache_line.hpp"
+#include "state.hpp"
 
-CacheLine::CacheLine(size_t tag, size_t state) : tag(tag), state(state){};
+CacheLine::CacheLine(unsigned int tag, State state) : tag(tag), state(state){};
+
+State CacheLine::getState() { return state; };
+
+void CacheLine::setState(State state) { this->state = state; }

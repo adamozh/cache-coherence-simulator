@@ -20,15 +20,21 @@ class CacheSet {
 
     void invalidateCacheLine(size_t tag);
 
-    void addCacheLine(size_t tag, size_t state);
+    void addCacheLine(size_t tag, State state);
 
     bool readCacheLine(size_t tag);
 
-    bool updateCacheLine(size_t tag, size_t state);
+    bool updateCacheLine(size_t tag, State state);
 
-    size_t checkCacheLineState(size_t tag);
+    State checkCacheLineState(size_t tag);
+
+    void setCacheLineState(size_t tag, State state);
 
     bool checkCacheSetFull();
+
+    bool isEmpty();
+
+    CacheLine getFirst();
 
     friend class Cache;
 };

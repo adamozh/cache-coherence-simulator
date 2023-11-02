@@ -2,7 +2,7 @@
 CXX = clang++
 
 # Compiler flags
-CXXFLAGS = -Wall -std=c++20
+CXXFLAGS = -std=c++20
 
 # Name of the executable
 TARGET = coherence

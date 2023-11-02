@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < processors.size(); i++) {
             processors[i]->executeCycle();
         }
+        bus->executeCycle();
         bool isDone = all_of(processors.begin(), processors.end(),
                              [&](shared_ptr<Processor> p) { return p->isDone(); });
         if (isDone) {

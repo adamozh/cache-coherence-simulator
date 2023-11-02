@@ -12,7 +12,7 @@ class BusImpl : public Bus {
   private:
     vector<shared_ptr<Processor>> processors;
     shared_ptr<Request> currReq = nullptr;
-    vector<Request> memRequests;
+    vector<shared_ptr<Request>> memRequests;
     queue<shared_ptr<Request>> busQueue;
 
   public:

@@ -1,13 +1,12 @@
 #pragma once
 
-#ifndef CACHE_H
-#define CACHE_H
-
 #include "cache_set.hpp"
+#include "state.hpp"
 #include <cstddef>
 #include <iostream>
 #include <list>
 #include <vector>
+
 using namespace std;
 class CacheSet;
 class Cache {
@@ -32,13 +31,15 @@ class Cache {
 
     void invalidateCacheLine(size_t address);
 
-    void addCacheLine(size_t address, size_t state);
+    void addCacheLine(size_t address, State state);
 
     bool readCacheLine(size_t address);
 
-    bool updateCacheLine(size_t address, size_t state);
+    bool updateCacheLine(size_t address, State state);
 
-    size_t checkCacheLineState(size_t address);
+    State getCacheLineState(size_t address);
+
+    void setCacheLineState(size_t address, State state);
+
+    State getLRUCacheLineState(size_t address);
 };
-
-#endif // CACHE_H

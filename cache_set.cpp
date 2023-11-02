@@ -25,7 +25,7 @@ void CacheSet::invalidateCacheLine(size_t tag) {
     }
 }
 
-void CacheSet::addCacheLine(size_t tag, size_t state) {
+void CacheSet::addCacheLine(size_t tag, State state) {
     // create a cacheline class
     // add it to the back of the linked list if the size is less than max size
     if (cacheSet.size() == maxSize) {
@@ -50,7 +50,7 @@ bool CacheSet::readCacheLine(size_t tag) {
     return false;
 }
 
-bool CacheSet::updateCacheLine(size_t tag, size_t state) {
+bool CacheSet::updateCacheLine(size_t tag, State state) {
     // update the cacheline
     // need to pop out the cache and then update it then add it to the end of the list
     for (auto it = this->cacheSet.begin(); it != this->cacheSet.end(); ++it) {
@@ -70,16 +70,25 @@ bool CacheSet::updateCacheLine(size_t tag, size_t state) {
     return false;
 }
 
-size_t CacheSet::checkCacheLineState(size_t tag) {
-    for (const auto& cacheLine : cacheSet) {
-        if (cacheLine.tag == tagToFind) {
-            return cacheLine.state;
+State CacheSet::checkCacheLineState(size_t tag) {
+    for (auto &cacheLine : cacheSet) {
+        if (cacheLine.tag == tag) {
+            return cacheLine.getState();
         }
     }
-    return 0; // this will be similar to invalid state
+    return I; // this will be similar to invalid state
 }
 
-bool CacheSet::checkCacheSetFull()
-{
-    return cacheSet.size() == maxSize;
+void CacheSet::setCacheLineState(size_t tag, State state) {
+    for (auto &cacheLine : cacheSet) {
+        if (cacheLine.tag == tag) {
+            cacheLine.setState(state);
+        }
+    }
 }
+
+bool CacheSet::checkCacheSetFull() { return cacheSet.size() == maxSize; }
+
+bool CacheSet::isEmpty() { return cacheSet.empty(); }
+
+CacheLine CacheSet::getFirst() { return cacheSet.front(); }

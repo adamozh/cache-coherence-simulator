@@ -1,4 +1,5 @@
 #include "cache.hpp"
+
 Cache::Cache(size_t cacheSize, size_t associativity, size_t blockSize) {
     this->associativity = associativity;
     this->blockSize = blockSize;
@@ -30,7 +31,7 @@ void Cache::invalidateCacheLine(size_t address) {
     cache[index].invalidateCacheLine(tag);
 }
 
-void Cache::addCacheLine(size_t address, size_t state) {
+void Cache::addCacheLine(size_t address, State state) {
     // performs a addCacheLine
     size_t index = getIndex(address);
     size_t tag = getTag(address);
@@ -45,29 +46,30 @@ bool Cache::readCacheLine(size_t address) {
     return cache[index].readCacheLine(tag);
 }
 
-bool Cache::updateCacheLine(size_t address, size_t state) {
+bool Cache::updateCacheLine(size_t address, State state) {
     // checkCacheLine
     size_t index = getIndex(address);
     size_t tag = getTag(address);
     return cache[index].updateCacheLine(tag, state);
 }
 
-size_t Cache::checkCacheLineState(size_t address) {
+State Cache::getCacheLineState(size_t address) {
     size_t index = getIndex(address);
     size_t tag = getTag(address);
     return cache[index].checkCacheLineState(tag);
 }
 
-CacheLine Cache::getLRUCacheLine(size_t address)
-{
+void Cache::setCacheLineState(size_t address, State state) {
+    size_t index = getIndex(address);
+    size_t tag = getTag(address);
+    cache[index].setCacheLineState(tag, state);
+}
+
+State Cache::getLRUCacheLineState(size_t address) {
     size_t index = getIndex(address);
 
-    if (!cache[index].empty()) {
-        CacheLine LRUCacheline = cache[index].front();
-        return CacheLine;
+    if (!cache[index].isEmpty()) {
+        return cache[index].getFirst().getState();
     }
-    else {
-        std::cout << "The list is empty." << std::endl;
-    }
-    return CacheLine();//TODO: ask adam about this
+    return I;
 }

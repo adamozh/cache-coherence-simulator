@@ -1,15 +1,16 @@
-#ifndef CACHELINE_H
-#define CACHELINE_H
+#pragma once
 
+#include "state.hpp"
 #include <cstddef>
 
 class CacheLine {
-    size_t state; // The states currently will corresponds to 0,1,2,3
+    State state; // The states currently will corresponds to 0,1,2,3
     // M -- 0, E -- 1, S -- 2, I -- 3 or M -- 0 E -- 1 Sc -- 2 Sm -- 3
-    size_t tag;
+    unsigned int tag;
     friend class CacheSet;
 
-    CacheLine(size_t tag, size_t state);
+  public:
+    CacheLine(unsigned int tag, State state);
+    State getState();
+    void setState(State state);
 };
-
-#endif // CACHELINE_H
