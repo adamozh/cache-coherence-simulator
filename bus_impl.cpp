@@ -1,6 +1,6 @@
 #include "bus_impl.hpp"
 #include "processor.hpp"
-#include "request.cpp"
+#include "request.hpp"
 #include <memory>
 #include <queue>
 #include <vector>
