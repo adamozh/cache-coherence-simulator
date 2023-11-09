@@ -12,5 +12,4 @@ class Protocol {
                                        shared_ptr<Cache> cache) = 0;
     virtual shared_ptr<Request> onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
                                         shared_ptr<Cache> cache) = 0;
-    virtual bool onBusRd(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) = 0;
 };

@@ -20,11 +20,10 @@ class ProcessorImpl : public Processor {
     vector<pair<unsigned int, unsigned int>> stream;
     int streamIndex = 0;
     shared_ptr<Protocol> protocol;
-    shared_ptr<Cache> l1Data;
+    shared_ptr<Cache> cache;
     shared_ptr<Bus> bus;
 
     ProcessorState state = FREE;
-    shared_ptr<Request> currRequest = nullptr;
     unsigned int cycles = 0;
 
     unsigned int memCounter = 0;

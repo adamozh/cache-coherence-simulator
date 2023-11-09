@@ -14,7 +14,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
                              unsigned int associativity, unsigned int blockSize,
                              shared_ptr<Bus> bus, shared_ptr<Protocol> protocol)
     : pid(pid), protocol(protocol), bus(bus) {
-    l1Data = make_shared<Cache>(cacheSize, associativity, blockSize);
+    cache = make_shared<Cache>(cacheSize, associativity, blockSize);
     ifstream file(filepath); // just let runtime exception throw if fail
     string line;
     unsigned int type, value;
@@ -36,14 +36,15 @@ void ProcessorImpl::executeCycle() {
     switch (state) {
     case FREE:
         execute(type, value);
+        streamIndex++;
         break;
     case STORE:
-        if (currRequest->isDone()) {
+        if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
         }
         break;
     case LOAD:
-        if (currRequest->isDone()) {
+        if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
         }
         break;
@@ -60,13 +61,12 @@ void ProcessorImpl::executeCycle() {
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
     switch (type) {
-    case 0: // load
-        currRequest =
-            protocol->onLoad(pid, value, bus, l1Data); // nullptr if no request issued onto bus
+    case 0:                                       // load
+        protocol->onLoad(pid, value, bus, cache); // nullptr if no request issued onto bus
         state = LOAD;
         break;
     case 1: // store
-        currRequest = protocol->onStore(pid, value, bus, l1Data);
+        protocol->onStore(pid, value, bus, cache);
         state = STORE;
         break;
     case 2: // non-memory instructions
@@ -81,7 +81,12 @@ void ProcessorImpl::execute(unsigned int type, unsigned int value) {
 void ProcessorImpl::invalidateCache() {}
 
 bool ProcessorImpl::onBusRd(unsigned int address) {
-    return protocol->onBusRd(address, bus, l1Data);
+    State state = cache->getCacheLineState(address);
+    if (state == M || state == E || state == S) {
+        cache->setCacheLineState(address, S);
+        return true;
+    }
+    return false;
 }
 
 bool ProcessorImpl::isDone() { return done; }

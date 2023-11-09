@@ -1,13 +1,39 @@
 #include "bus_impl.hpp"
 #include "processor.hpp"
 #include "request.hpp"
+#include "state.hpp"
 #include <memory>
 #include <queue>
+#include <stdexcept>
 #include <vector>
 
 using namespace std;
 
 void BusImpl::attachProcessor(shared_ptr<Processor> proc) { this->processors.push_back(proc); }
+
+void BusImpl::pushRequestToBus(shared_ptr<Request> request) {
+    busQueue.push(request);
+    if (request->pid != -1) {
+        currentRequests[request->pid] = request;
+    }
+}
+
+void BusImpl::pushRequestToMemory(shared_ptr<Request> request) {
+    memRequests.push_back(request);
+    if (request->pid != -1) {
+        currentRequests[request->pid] = request;
+    }
+}
+
+bool BusImpl::isCurrentRequestDone(int pid) {
+    if (pid == -1) {
+        throw runtime_error("pid shouldn't be -1");
+    }
+    if (currentRequests[pid] == nullptr) {
+        throw runtime_error("there should be a current request");
+    }
+    return currentRequests[pid]->done;
+}
 
 void BusImpl::issueInvalidation() {
     for (auto processor : this->processors) {
@@ -15,21 +41,16 @@ void BusImpl::issueInvalidation() {
     }
 }
 
-bool BusImpl::issueBusRd(unsigned int address) {
-    bool isShared = false;
-    for (auto p : this->processors) {
-        isShared |= p->onBusRd(address);
-    }
-    return false;
-}
+void BusImpl::processRequest(shared_ptr<Request> request) {
+    if (request->type == BusRd) {
+        bool isShared = false;
+        for (auto p : this->processors) {
+            isShared |= p->onBusRd(request->address);
+        }
+        State newState = isShared ? S : E;
 
-void BusImpl::processCurrentRequest() {
-    // TODO: need to handle the logic for processing a request
-    currReq->decrement();
-    if (currReq->isDone()) {
-        currReq = nullptr;
+        // cache->setCacheLineState(address, newState);
     }
-    /* handle memory */
 }
 
 void BusImpl::executeCycle() {
@@ -39,6 +60,16 @@ void BusImpl::executeCycle() {
     if (currReq == nullptr && !busQueue.empty()) {
         currReq = busQueue.front();
         busQueue.pop();
+        processRequest(currReq);
     }
-    processCurrentRequest();
+    currReq->countdown--;
+    if (currReq->countdown == 0) {
+        if (currReq->isModified) {
+            memRequests.push_back(currReq);
+        } else {
+            currReq->done = true;
+        }
+        currReq = nullptr;
+        return;
+    }
 }
