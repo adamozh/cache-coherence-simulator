@@ -15,6 +15,8 @@ enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
 
 class ProcessorImpl : public Processor {
   private:
+    int id;
+
     vector<pair<unsigned int, unsigned int>> stream;
     shared_ptr<Protocol> protocol;
     shared_ptr<Cache> l1Data;
@@ -32,7 +34,7 @@ class ProcessorImpl : public Processor {
     void execute(unsigned int type, unsigned int value);
 
   public:
-    ProcessorImpl(string filepath, unsigned int cacheSize, unsigned int associativity,
+    ProcessorImpl(int id, string filepath, unsigned int cacheSize, unsigned int associativity,
                   unsigned int blockSize, shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
     void executeCycle();
     void invalidateCache();

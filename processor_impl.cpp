@@ -10,10 +10,10 @@
 
 using namespace std;
 
-ProcessorImpl::ProcessorImpl(string filepath, unsigned int cacheSize, unsigned int associativity,
-                             unsigned int blockSize, shared_ptr<Bus> bus,
-                             shared_ptr<Protocol> protocol)
-    : protocol(protocol), bus(bus) {
+ProcessorImpl::ProcessorImpl(int id, string filepath, unsigned int cacheSize,
+                             unsigned int associativity, unsigned int blockSize,
+                             shared_ptr<Bus> bus, shared_ptr<Protocol> protocol)
+    : id(id), protocol(protocol), bus(bus) {
     l1Data = make_shared<Cache>(cacheSize, associativity, blockSize);
     ifstream file(filepath); // just let runtime exception throw if fail
     string line;
