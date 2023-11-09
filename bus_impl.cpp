@@ -23,14 +23,22 @@ bool BusImpl::issueBusRd(unsigned int address) {
     return false;
 }
 
+void BusImpl::processCurrentRequest() {
+    // TODO: need to handle the logic for processing a request
+    currReq->decrement();
+    if (currReq->isDone()) {
+        currReq = nullptr;
+    }
+    /* handle memory */
+}
+
 void BusImpl::executeCycle() {
-    if (currReq == nullptr) {
+    if (currReq == nullptr && busQueue.empty()) {
+        return;
+    }
+    if (currReq == nullptr && !busQueue.empty()) {
         currReq = busQueue.front();
         busQueue.pop();
     }
-    currReq->decrement();
-    if (currReq->isDone()) {
-        /* current bus transaction is done */
-    }
-    /* handle memory */
+    processCurrentRequest();
 }

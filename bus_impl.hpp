@@ -14,6 +14,7 @@ class BusImpl : public Bus {
     shared_ptr<Request> currReq = nullptr;
     vector<shared_ptr<Request>> memRequests;
     queue<shared_ptr<Request>> busQueue;
+    void processCurrentRequest();
 
   public:
     void attachProcessor(shared_ptr<Processor> proc);
