@@ -1,23 +1,28 @@
 #include "mesi.hpp"
+#include "request.hpp"
 #include "state.hpp"
 #include <stdexcept>
 
 using namespace std;
 
-void MESIProtocol::onLoad(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) {
+shared_ptr<Request> MESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
+                                         shared_ptr<Cache> cache) {
     State state = cache->getCacheLineState(address);
     if (state == M || state == E || state == S) {
-        return;
+        return nullptr;
     } else if (state == I) {
+        shared_ptr<Request> busRdRequest = make_shared<Request>(pid);
         bool isExclusive = bus->issueBusRd(address);
         State newState = isExclusive ? E : S;
         cache->setCacheLineState(address, newState);
+        return busRdRequest;
     } else {
         throw runtime_error("invalid state");
     }
 }
 
-void MESIProtocol::onStore(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) {
+shared_ptr<Request> MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
+                                          shared_ptr<Cache> cache) {
     // MESI-specific logic
     /*
     if hit ->

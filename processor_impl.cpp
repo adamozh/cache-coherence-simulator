@@ -61,11 +61,14 @@ void ProcessorImpl::executeCycle() {
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
     switch (type) {
     case 0: // load
-        protocol->onLoad(value, bus, l1Data);
+        currRequest =
+            protocol->onLoad(pid, value, bus, l1Data); // nullptr if no request issued onto bus
+        state = LOAD;
         break;
     case 1: // store
-        protocol->onStore(value, bus, l1Data);
+        currRequest = protocol->onStore(pid, value, bus, l1Data);
         state = STORE;
+        break;
     case 2: // non-memory instructions
         state = NON_MEMORY;
         nonMemCounter = value;

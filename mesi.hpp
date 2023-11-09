@@ -6,7 +6,9 @@ using namespace std;
 
 class MESIProtocol : public Protocol {
   public:
-    void onLoad(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
-    void onStore(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
+    shared_ptr<Request> onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
+                               shared_ptr<Cache> cache) override;
+    shared_ptr<Request> onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
+                                shared_ptr<Cache> cache) override;
     bool onBusRd(unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
 };
