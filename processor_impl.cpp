@@ -10,10 +10,10 @@
 
 using namespace std;
 
-ProcessorImpl::ProcessorImpl(int id, string filepath, unsigned int cacheSize,
+ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
                              unsigned int associativity, unsigned int blockSize,
                              shared_ptr<Bus> bus, shared_ptr<Protocol> protocol)
-    : id(id), protocol(protocol), bus(bus) {
+    : pid(pid), protocol(protocol), bus(bus) {
     l1Data = make_shared<Cache>(cacheSize, associativity, blockSize);
     ifstream file(filepath); // just let runtime exception throw if fail
     string line;
@@ -30,32 +30,32 @@ ProcessorImpl::ProcessorImpl(int id, string filepath, unsigned int cacheSize,
 }
 
 void ProcessorImpl::executeCycle() {
-    // TODO: read instructions line by line here
+    auto pair = this->stream[streamIndex];
+    unsigned int type = pair.first;
+    unsigned int value = pair.second;
     switch (state) {
     case FREE:
-        // call execute(); with instruction type and value
+        execute(type, value);
         break;
     case STORE:
         if (currRequest->isDone()) {
             state = FREE;
         }
-        cycles++;
         break;
     case LOAD:
         if (currRequest->isDone()) {
             state = FREE;
         }
-        cycles++;
         break;
     case NON_MEMORY:
         if (!nonMemCounter) {
             state = FREE;
         }
-        cycles++;
         break;
     case MEM_ACCESS:
         break;
     }
+    cycles++;
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
@@ -76,5 +76,9 @@ void ProcessorImpl::execute(unsigned int type, unsigned int value) {
 }
 
 void ProcessorImpl::invalidateCache() {}
+
+bool ProcessorImpl::onBusRd(unsigned int address) {
+    return protocol->onBusRd(address, bus, l1Data);
+}
 
 bool ProcessorImpl::isDone() { return done; }

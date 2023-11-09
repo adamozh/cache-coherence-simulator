@@ -15,6 +15,14 @@ void BusImpl::issueInvalidation() {
     }
 }
 
+bool BusImpl::issueBusRd(unsigned int address) {
+    bool isShared = false;
+    for (auto p : this->processors) {
+        isShared |= p->onBusRd(address);
+    }
+    return false;
+}
+
 void BusImpl::executeCycle() {
     if (currReq == nullptr) {
         currReq = busQueue.front();

@@ -25,8 +25,6 @@
     7. Number of invalidations or updates on the bus (bus)
     8. Distribution of accesses to private data vs shared data
 */
-// create a cacheline class
-// create a cache class -- contains many cacheline class
 
 using namespace std;
 
@@ -81,11 +79,13 @@ int main(int argc, char *argv[]) {
     shared_ptr<Protocol> protocolPtr =
         make_shared<MESIProtocol>(); // update this to initialise other protocols
 
+    int pid = 0;
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
         string filepath = entry.path().string();
-        shared_ptr<Processor> processor =
-            make_shared<ProcessorImpl>(filepath, cacheSize, associativity, blockSize, bus, nullptr);
+        shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
+            pid, filepath, cacheSize, associativity, blockSize, bus, nullptr);
         processors.push_back(processor);
+        pid++;
     }
 
     unsigned int clock = 0;

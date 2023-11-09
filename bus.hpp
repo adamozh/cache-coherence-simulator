@@ -13,5 +13,6 @@ class Bus {
   public:
     virtual void attachProcessor(shared_ptr<Processor> proc) = 0;
     virtual void issueInvalidation() = 0;
+    virtual bool issueBusRd(unsigned int address) = 0;
     virtual void executeCycle() = 0;
 };

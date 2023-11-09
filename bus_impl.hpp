@@ -18,5 +18,6 @@ class BusImpl : public Bus {
   public:
     void attachProcessor(shared_ptr<Processor> proc);
     void issueInvalidation();
+    bool issueBusRd(unsigned int address);
     void executeCycle();
 };

@@ -15,9 +15,10 @@ enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
 
 class ProcessorImpl : public Processor {
   private:
-    int id;
+    int pid;
 
     vector<pair<unsigned int, unsigned int>> stream;
+    int streamIndex = 0;
     shared_ptr<Protocol> protocol;
     shared_ptr<Cache> l1Data;
     shared_ptr<Bus> bus;
@@ -34,9 +35,10 @@ class ProcessorImpl : public Processor {
     void execute(unsigned int type, unsigned int value);
 
   public:
-    ProcessorImpl(int id, string filepath, unsigned int cacheSize, unsigned int associativity,
+    ProcessorImpl(int pid, string filepath, unsigned int cacheSize, unsigned int associativity,
                   unsigned int blockSize, shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
-    void executeCycle();
-    void invalidateCache();
-    bool isDone();
+    void executeCycle() override;
+    void invalidateCache() override;
+    bool onBusRd(unsigned int address) override;
+    bool isDone() override;
 };
