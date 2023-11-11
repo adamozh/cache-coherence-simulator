@@ -6,4 +6,5 @@ class Processor {
     virtual void invalidateCache() = 0;
     virtual bool onBusRd(unsigned int address) = 0;
     virtual bool isDone() = 0;
+    virtual void setState(unsigned int address, State state) = 0;
 };

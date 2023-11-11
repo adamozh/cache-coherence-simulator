@@ -61,13 +61,13 @@ void ProcessorImpl::executeCycle() {
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
     switch (type) {
-    case 0:                                       // load
-        protocol->onLoad(pid, value, bus, cache); // nullptr if no request issued onto bus
-        state = LOAD;
+    case 0: // load
+        bool isHit = protocol->onLoad(pid, value, bus, cache);
+        state = isHit ? FREE : LOAD;
         break;
     case 1: // store
-        protocol->onStore(pid, value, bus, cache);
-        state = STORE;
+        bool isHit = protocol->onStore(pid, value, bus, cache);
+        state = isHit ? FREE : STORE;
         break;
     case 2: // non-memory instructions
         state = NON_MEMORY;
@@ -90,3 +90,7 @@ bool ProcessorImpl::onBusRd(unsigned int address) {
 }
 
 bool ProcessorImpl::isDone() { return done; }
+
+void ProcessorImpl::setState(unsigned int address, State state) {
+    cache->setCacheLineState(address, state);
+}

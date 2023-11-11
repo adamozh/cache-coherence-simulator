@@ -8,8 +8,8 @@ using namespace std;
 
 class Protocol {
   public:
-    virtual shared_ptr<Request> onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
-                                       shared_ptr<Cache> cache) = 0;
-    virtual shared_ptr<Request> onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
-                                        shared_ptr<Cache> cache) = 0;
+    virtual bool onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
+                        shared_ptr<Cache> cache) = 0;
+    virtual bool onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
+                         shared_ptr<Cache> cache) = 0;
 };

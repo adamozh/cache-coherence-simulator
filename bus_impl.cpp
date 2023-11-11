@@ -46,8 +46,10 @@ void BusImpl::processRequest(shared_ptr<Request> request) {
         bool isShared = false;
         for (auto p : this->processors) {
             isShared |= p->onBusRd(request->address);
+            p->setState(request->address, S);
         }
         State newState = isShared ? S : E;
+        processors[request->pid]->setState(request->address, newState);
 
         // cache->setCacheLineState(address, newState);
     }

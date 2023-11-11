@@ -40,4 +40,5 @@ class ProcessorImpl : public Processor {
     void invalidateCache() override;
     bool onBusRd(unsigned int address) override;
     bool isDone() override;
+    void setState(unsigned int address, State state) override;
 };
