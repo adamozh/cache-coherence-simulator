@@ -30,5 +30,6 @@ bool MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
         create BusRdX request
 
     */
+
     return true;
 }
