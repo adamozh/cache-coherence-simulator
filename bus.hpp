@@ -13,8 +13,8 @@ class Bus {
 
   public:
     virtual void attachProcessor(shared_ptr<Processor> proc) = 0;
-    virtual void pushRequest(shared_ptr<Request> request) = 0;
-    virtual void issueInvalidation() = 0;
+    // virtual void pushRequest(shared_ptr<Request> request) = 0;
+    virtual void issueInvalidation(unsigned int address) = 0;
     virtual void executeCycle() = 0;
     virtual bool isCurrentRequestDone(int pid) = 0;
 };
