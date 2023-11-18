@@ -37,31 +37,39 @@ bool BusImpl::isCurrentRequestDone(int pid) {
 
 void BusImpl::issueInvalidation(unsigned int pid) {
     for (auto processor : this->processors) {
-        if (processor->getPID() == pid){
+        if (processor->getPID() == pid) {
             continue;
         }
         processor->invalidateCache();
     }
 }
 
+void BusImpl::processBusRd(shared_ptr<Request> request) {
+    bool isShared = false;
+    for (auto p : this->processors) {
+        isShared |= p->onBusRd(request->address);
+        p->setState(request->address, S);
+    }
+    State newState = isShared ? S : E;
+    processors[request->pid]->setState(request->address, newState);
+    if (isShared) {
+        // flush, this case is 2n + 100 + 2n
+        request->countdown = 2; // TODO: GET BLOCK SIZE HERE
+    } else {
+        // don't need to flush, just load from memory, this case is 100 + 2n
+        request->countdown = 100;
+        memRequests.push_back(request);
+        currReq = nullptr;
+    }
+}
+
+void BusImpl::processBusRdX(shared_ptr<Request> request) { return; }
+
 void BusImpl::processRequest(shared_ptr<Request> request) {
     if (request->type == BusRd) {
-        bool isShared = false;
-        for (auto p : this->processors) {
-            isShared |= p->onBusRd(request->address);
-            p->setState(request->address, S);
-        }
-        State newState = isShared ? S : E;
-        processors[request->pid]->setState(request->address, newState);
-        if (isShared) {
-            // flush, this case is 2n + 100 + 2n
-            request->countdown = 2; // TODO: GET BLOCK SIZE HERE
-        } else {
-            // don't need to flush, just load from memory, this case is 100 + 2n
-            request->countdown = 100;
-            memRequests.push_back(request);
-            currReq = nullptr;
-        }
+        processBusRd(request);
+    } else if (request->type == BusRdX) {
+        processBusRdX(request);
     }
 }
 
