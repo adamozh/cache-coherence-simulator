@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    shared_ptr<Bus> bus = make_shared<BusImpl>();
+    shared_ptr<Bus> bus = make_shared<BusImpl>(blockSize / 4);
     vector<shared_ptr<Processor>> processors;
     shared_ptr<Protocol> protocolPtr =
         make_shared<MESIProtocol>(); // update this to initialise other protocols
