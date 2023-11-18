@@ -14,7 +14,7 @@ using namespace std;
 enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
 
 class ProcessorImpl : public Processor {
-  private:
+  public:
     int pid;
 
     vector<pair<unsigned int, unsigned int>> stream;
@@ -41,4 +41,5 @@ class ProcessorImpl : public Processor {
     bool onBusRd(unsigned int address) override;
     bool isDone() override;
     void setState(unsigned int address, State state) override;
+    int getPID() { return pid; }
 };

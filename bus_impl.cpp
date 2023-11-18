@@ -35,8 +35,11 @@ bool BusImpl::isCurrentRequestDone(int pid) {
     return currentRequests[pid]->done;
 }
 
-void BusImpl::issueInvalidation() {
+void BusImpl::issueInvalidation(unsigned int pid) {
     for (auto processor : this->processors) {
+        if (processor->getPID() == pid){
+            continue;
+        }
         processor->invalidateCache();
     }
 }

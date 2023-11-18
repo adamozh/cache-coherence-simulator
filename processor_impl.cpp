@@ -60,13 +60,15 @@ void ProcessorImpl::executeCycle() {
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
+    bool isHit;
     switch (type) {
     case 0: // load
-        bool isHit = protocol->onLoad(pid, value, bus, cache);
+        isHit = protocol->onLoad(pid, value, bus, cache);
         state = isHit ? FREE : LOAD;
         break;
     case 1: // store
-        bool isHit = protocol->onStore(pid, value, bus, cache);
+        // bool isHit = protocol->onStore(pid, value, bus, cache); //CAUTION: This cause error
+        isHit = protocol->onStore(pid, value, bus, cache);
         state = isHit ? FREE : STORE;
         break;
     case 2: // non-memory instructions
