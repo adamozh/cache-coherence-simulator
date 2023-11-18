@@ -115,7 +115,8 @@ void BusImpl::executeCycle() {
     for (auto req : memRequests) {
         req->countdown--;
         if (req->countdown == 0) {
-            req->countdown = 2;
+            req->countdown = 2 * wordsPerBlock;
+            req->isToMemOrCache = false;
             // this last 2n request is still tagged to the original processor in the bus map
             busQueue.push(req);
         }
