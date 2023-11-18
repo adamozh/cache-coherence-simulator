@@ -82,14 +82,7 @@ void ProcessorImpl::execute(unsigned int type, unsigned int value) {
 
 void ProcessorImpl::invalidateCache() {}
 
-bool ProcessorImpl::onBusRd(unsigned int address) {
-    State state = cache->getCacheLineState(address);
-    if (state == M || state == E || state == S) {
-        cache->setCacheLineState(address, S);
-        return true;
-    }
-    return false;
-}
+State ProcessorImpl::getState(unsigned int address) { return cache->getCacheLineState(address); }
 
 bool ProcessorImpl::isDone() { return done; }
 
