@@ -11,6 +11,11 @@ using namespace std;
 
 class BusImpl : public Bus {
   private:
+    void processBusRd(shared_ptr<Request> request);
+    void processBusRdX(shared_ptr<Request> request);
+
+  public:
+    int wordsPerBlock;
     vector<shared_ptr<Processor>> processors;
     vector<shared_ptr<Request>> currentRequests;
     shared_ptr<Request> currReq = nullptr;
@@ -19,8 +24,9 @@ class BusImpl : public Bus {
     void processRequest(shared_ptr<Request> request);
 
   public:
+    BusImpl(int wordsPerBlock) : wordsPerBlock(wordsPerBlock){};
     void attachProcessor(shared_ptr<Processor> proc);
-    void issueInvalidation();
+    void issueInvalidation(unsigned int pid);
     void pushRequestToBus(shared_ptr<Request> request);
     void pushRequestToMemory(shared_ptr<Request> request);
     bool isCurrentRequestDone(int pid);

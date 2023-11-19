@@ -18,6 +18,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
     ifstream file(filepath); // just let runtime exception throw if fail
     string line;
     unsigned int type, value;
+    int line_limit_counter = 0;
     while (getline(file, line)) {
         stringstream ss(line);
         ss >> type;
@@ -26,6 +27,8 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         if (s.starts_with("0x")) s = s.substr(2);
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
+        line_limit_counter++;
+        if (line_limit_counter == 10) break;
     }
 }
 
@@ -60,13 +63,15 @@ void ProcessorImpl::executeCycle() {
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
+    cout << "pid " << pid << " execute " << type << " " << value << endl;
+    bool isHit;
     switch (type) {
     case 0: // load
-        bool isHit = protocol->onLoad(pid, value, bus, cache);
+        isHit = protocol->onLoad(pid, value, bus, cache);
         state = isHit ? FREE : LOAD;
         break;
     case 1: // store
-        bool isHit = protocol->onStore(pid, value, bus, cache);
+        isHit = protocol->onStore(pid, value, bus, cache);
         state = isHit ? FREE : STORE;
         break;
     case 2: // non-memory instructions
@@ -80,17 +85,15 @@ void ProcessorImpl::execute(unsigned int type, unsigned int value) {
 
 void ProcessorImpl::invalidateCache() {}
 
-bool ProcessorImpl::onBusRd(unsigned int address) {
-    State state = cache->getCacheLineState(address);
-    if (state == M || state == E || state == S) {
-        cache->setCacheLineState(address, S);
-        return true;
-    }
-    return false;
-}
+State ProcessorImpl::getState(unsigned int address) { return cache->getCacheLineState(address); }
 
 bool ProcessorImpl::isDone() { return done; }
 
 void ProcessorImpl::setState(unsigned int address, State state) {
     cache->setCacheLineState(address, state);
+}
+
+void ProcessorImpl::printProgressInline() {
+    cout << "[" << streamIndex << "/" << stream.size() << "]"
+         << " ";
 }

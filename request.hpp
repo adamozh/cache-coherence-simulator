@@ -8,9 +8,10 @@ class Request {
     unsigned int countdown = 0;
 
     unsigned int pid;
-    bool isModified;
+    bool isToMemOrCache = false;
     TransactionType type;
     unsigned int address;
 
-    Request(int pid, TransactionType type) : pid(pid), type(type){};
+    Request(int pid, TransactionType type, unsigned int address)
+        : pid(pid), type(type), address(address){};
 };
