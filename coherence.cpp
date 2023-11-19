@@ -28,6 +28,8 @@
 
 using namespace std;
 
+bool debug = true;
+
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
     if (argc != 6) {
@@ -79,6 +81,7 @@ int main(int argc, char *argv[]) {
     shared_ptr<Protocol> protocolPtr =
         make_shared<MESIProtocol>(); // update this to initialise other protocols
 
+    cout << "loading files" << endl;
     int pid = 0;
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
         string filepath = entry.path().string();
@@ -86,16 +89,27 @@ int main(int argc, char *argv[]) {
             pid, filepath, cacheSize, associativity, blockSize, bus, nullptr);
         processors.push_back(processor);
         pid++;
+        cout << "loaded files for " << filepath << endl;
     }
 
     unsigned int clock = 0;
     while (true) {
+        if (debug) cout << "CLOCK CYCLE: " << clock << endl;
         for (int i = 0; i < processors.size(); i++) {
+            if (debug) cout << i << endl;
             processors[i]->executeCycle();
         }
         bus->executeCycle();
         bool isDone = all_of(processors.begin(), processors.end(),
                              [&](shared_ptr<Processor> p) { return p->isDone(); });
+
+        if (debug) {
+            for (int i = 0; i < processors.size(); i++) {
+                processors[i]->printProgressInline();
+            }
+            cout << endl;
+        }
+
         if (isDone) {
             break;
         } else {

@@ -42,4 +42,5 @@ class ProcessorImpl : public Processor {
     bool isDone() override;
     void setState(unsigned int address, State state) override;
     int getPID() override { return pid; };
+    void printProgressInline() override;
 };

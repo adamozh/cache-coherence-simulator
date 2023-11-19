@@ -18,6 +18,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
     ifstream file(filepath); // just let runtime exception throw if fail
     string line;
     unsigned int type, value;
+    int line_limit_counter = 0;
     while (getline(file, line)) {
         stringstream ss(line);
         ss >> type;
@@ -26,6 +27,8 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         if (s.starts_with("0x")) s = s.substr(2);
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
+        line_limit_counter++;
+        if (line_limit_counter == 10) break;
     }
 }
 
@@ -67,7 +70,6 @@ void ProcessorImpl::execute(unsigned int type, unsigned int value) {
         state = isHit ? FREE : LOAD;
         break;
     case 1: // store
-        // bool isHit = protocol->onStore(pid, value, bus, cache); //CAUTION: This cause error
         isHit = protocol->onStore(pid, value, bus, cache);
         state = isHit ? FREE : STORE;
         break;
@@ -88,4 +90,9 @@ bool ProcessorImpl::isDone() { return done; }
 
 void ProcessorImpl::setState(unsigned int address, State state) {
     cache->setCacheLineState(address, state);
+}
+
+void ProcessorImpl::printProgressInline() {
+    cout << "[" << streamIndex << "/" << stream.size() << "]"
+         << " ";
 }

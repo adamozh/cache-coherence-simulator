@@ -9,15 +9,26 @@
 
 using namespace std;
 
+/**
+ * correctness checks for implementation of bus:
+ * 1. handling of requests in bus queue, current request, memory requests
+ * 2. lifecycle of a request, from creation to being set to done (and countdown values)
+ */
+
 void BusImpl::attachProcessor(shared_ptr<Processor> proc) { this->processors.push_back(proc); }
 
 void BusImpl::pushRequestToBus(shared_ptr<Request> request) {
     busQueue.push(request);
+    // the request is tagged to the processor for tracking. it should remain the same throughout
     if (request->pid != -1) {
         currentRequests[request->pid] = request;
     }
 }
 
+// sanity check: at least for mesi, this is not used becausae protocol/processor won't call.
+// because they haven't done any checks for whether another processor has it in M state
+// this is done internally in this class, in processBusRd and processBusRdX
+// i'll leave it here first but if you don't need this, can remove
 void BusImpl::pushRequestToMemory(shared_ptr<Request> request) {
     memRequests.push_back(request);
     if (request->pid != -1) {
@@ -44,9 +55,6 @@ void BusImpl::issueInvalidation(unsigned int pid) {
     }
 }
 
-/*
- * assume that processing a bus request happens within one cycle
- */
 void BusImpl::processBusRd(shared_ptr<Request> request) {
     // check if any other processor has it in M state
     // sanity check : if there exists the block in M state then they need to flush it
@@ -97,13 +105,16 @@ void BusImpl::executeCycle() {
         processRequest(currReq);
     }
 
-    // handle current request if there is one
+    // decrement current request if there is one
     if (currReq != nullptr) {
         currReq->countdown--;
         if (currReq->countdown == 0) {
             if (currReq->isToMemOrCache) {
+                // this request is going to mem next (100)
                 memRequests.push_back(currReq);
             } else {
+                // this request is going to cache (finished the last 2n, done)
+                // sanity check: this is the only place where request is set to done
                 currReq->done = true;
             }
             currReq = nullptr;

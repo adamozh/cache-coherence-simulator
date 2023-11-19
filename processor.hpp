@@ -8,4 +8,5 @@ class Processor {
     virtual bool isDone() = 0;
     virtual void setState(unsigned int address, State state) = 0;
     virtual int getPID() = 0;
+    virtual void printProgressInline() = 0;
 };
