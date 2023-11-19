@@ -2,6 +2,7 @@
 #include "processor.hpp"
 #include "request.hpp"
 #include "state.hpp"
+#include <iostream>
 #include <memory>
 #include <queue>
 #include <stdexcept>
@@ -9,15 +10,21 @@
 
 using namespace std;
 
+bool bus_debug = true;
+
 /**
  * correctness checks for implementation of bus:
  * 1. handling of requests in bus queue, current request, memory requests
  * 2. lifecycle of a request, from creation to being set to done (and countdown values)
  */
 
-void BusImpl::attachProcessor(shared_ptr<Processor> proc) { this->processors.push_back(proc); }
+void BusImpl::attachProcessor(shared_ptr<Processor> proc) {
+    this->processors.push_back(proc);
+    this->currentRequests.push_back(nullptr);
+}
 
 void BusImpl::pushRequestToBus(shared_ptr<Request> request) {
+    if (bus_debug) cout << "push request to bus" << endl;
     busQueue.push(request);
     // the request is tagged to the processor for tracking. it should remain the same throughout
     if (request->pid != -1) {

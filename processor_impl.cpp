@@ -63,6 +63,7 @@ void ProcessorImpl::executeCycle() {
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
+    cout << "pid " << pid << " execute " << type << " " << value << endl;
     bool isHit;
     switch (type) {
     case 0: // load

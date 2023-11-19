@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
         string filepath = entry.path().string();
         shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
-            pid, filepath, cacheSize, associativity, blockSize, bus, nullptr);
+            pid, filepath, cacheSize, associativity, blockSize, bus, protocolPtr);
+        bus->attachProcessor(processor);
         processors.push_back(processor);
         pid++;
         cout << "loaded files for " << filepath << endl;
@@ -96,7 +97,6 @@ int main(int argc, char *argv[]) {
     while (true) {
         if (debug) cout << "CLOCK CYCLE: " << clock << endl;
         for (int i = 0; i < processors.size(); i++) {
-            if (debug) cout << i << endl;
             processors[i]->executeCycle();
         }
         bus->executeCycle();
