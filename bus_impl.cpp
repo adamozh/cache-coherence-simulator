@@ -172,6 +172,13 @@ void BusImpl::executeCycle() {
 void BusImpl::printProgress() {
     int pid = currReq == nullptr ? -1 : currReq->pid;
     cout << "current bus request: " << pid << endl;
+    cout << "all current requests: ";
+    for (auto r : currentRequests) {
+        if (r == nullptr) continue;
+        string done = r->done ? "done" : "not done";
+        cout << "[" << r->pid << ": " << r->countdown << " " << done << "] ";
+    }
+    cout << endl;
     cout << "queue size: " << busQueue.size() << endl;
     cout << "memRequests: ";
     for (auto r : memRequests) {

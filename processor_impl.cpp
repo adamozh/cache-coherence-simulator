@@ -60,6 +60,7 @@ void ProcessorImpl::executeCycle() {
         }
         break;
     case NON_MEMORY:
+        nonMemCounter--;
         if (!nonMemCounter) {
             state = FREE;
         }

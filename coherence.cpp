@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         } else {
             clock++;
         }
-        if (debug && clock == 220) break;
+        if (debug && clock == 1000) break;
     }
 
     return 0;
