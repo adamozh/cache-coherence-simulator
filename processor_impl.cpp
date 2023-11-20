@@ -64,15 +64,15 @@ void ProcessorImpl::executeCycle() {
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
     cout << "pid " << pid << " execute " << type << " " << value << endl;
-    bool isHit;
+    CacheResultType cacheStatus;
     switch (type) {
     case 0: // load
-        isHit = protocol->onLoad(pid, value, bus, cache);
-        state = isHit ? FREE : LOAD;
+        cacheStatus = protocol->onLoad(pid, value, bus, cache);
+        state = cacheStatus == CACHEHIT ? FREE : LOAD;
         break;
     case 1: // store
-        isHit = protocol->onStore(pid, value, bus, cache);
-        state = isHit ? FREE : STORE;
+        cacheStatus = protocol->onStore(pid, value, bus, cache);
+        state = cacheStatus == CACHEHIT ? FREE : STORE;
         break;
     case 2: // non-memory instructions
         state = NON_MEMORY;

@@ -1,5 +1,7 @@
 #pragma once
 #include "state.hpp"
+#include "cache_result_type.hpp"
+
 class Processor {
   public:
     virtual void executeCycle() = 0;

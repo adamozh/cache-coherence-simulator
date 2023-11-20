@@ -27,6 +27,8 @@ class Cache {
 
     size_t getTag(size_t address);
 
+    size_t getIndexWithTag(size_t address);
+
     bool checkCacheLine(size_t address);
 
     void invalidateCacheLine(size_t address);
