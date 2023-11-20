@@ -31,4 +31,5 @@ class BusImpl : public Bus {
     void pushRequestToMemory(shared_ptr<Request> request);
     bool isCurrentRequestDone(int pid);
     void executeCycle();
+    virtual shared_ptr<Processor> getProcessor(int pid);
 };

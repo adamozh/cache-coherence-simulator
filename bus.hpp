@@ -8,7 +8,7 @@
 using namespace std;
 
 class Bus {
-  private:
+  protected:
     vector<shared_ptr<Processor>> processors;
 
   public:

@@ -13,6 +13,11 @@ size_t Cache::getIndex(size_t address) {
     return (address / blockSize) % cacheSize;
 }
 
+size_t Cache::getIndexWithTag(size_t address) {
+    // this returns the index of the memory
+    return address / cacheSize;
+}
+
 size_t Cache::getTag(size_t address) { return (address / (blockSize * cacheSize)); }
 
 bool Cache::checkCacheLine(size_t address) {

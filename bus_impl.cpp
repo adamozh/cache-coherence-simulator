@@ -140,3 +140,8 @@ void BusImpl::executeCycle() {
         }
     }
 }
+
+shared_ptr<Processor> BusImpl::getProcessor(int pid)
+{
+    return processors[pid];
+}
