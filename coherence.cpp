@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int clock = 0;
     while (true) {
-        if (debug) cout << "CLOCK CYCLE: " << clock << endl;
+        if (debug) cout << "========== CLOCK CYCLE: " << clock << " ==========" << endl;
         for (int i = 0; i < processors.size(); i++) {
             processors[i]->executeCycle();
         }
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         } else {
             clock++;
         }
-        if (debug && clock == 1000) break;
+        if (debug && clock == 220) break;
     }
 
     return 0;
