@@ -36,7 +36,7 @@ string ProcessorImpl::stringOfState() {
     if (state == LOAD) return "LOAD";
     if (state == STORE) return "STORE";
     if (state == NON_MEMORY) return "NON_MEMORY";
-    if (state == MEM_ACCESS) return "MEM_ACCESS";
+    if (state == DONE) return "DONE";
     return "FREE";
 }
 
@@ -54,6 +54,7 @@ void ProcessorImpl::executeCycle() {
             state = FREE;
             if (streamIndex == stream.size()) {
                 done = true;
+                state = DONE;
             }
         }
         break;
@@ -62,6 +63,7 @@ void ProcessorImpl::executeCycle() {
             state = FREE;
             if (streamIndex == stream.size()) {
                 done = true;
+                state = DONE;
             }
         }
         break;
@@ -71,10 +73,11 @@ void ProcessorImpl::executeCycle() {
             state = FREE;
             if (streamIndex == stream.size()) {
                 done = true;
+                state = DONE;
             }
         }
         break;
-    case MEM_ACCESS:
+    case DONE:
         break;
     }
 }

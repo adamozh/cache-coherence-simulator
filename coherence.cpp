@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     while (true) {
         if (debug) cout << "========== CLOCK CYCLE: " << clock << " ==========" << endl;
         for (int i = 0; i < processors.size(); i++) {
-            processors[i]->executeCycle();
+            if (processors[i]->isDone() == false) processors[i]->executeCycle();
         }
         bus->executeCycle();
         bool isDone = all_of(processors.begin(), processors.end(),

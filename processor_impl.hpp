@@ -11,7 +11,7 @@
 
 using namespace std;
 
-enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
+enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, DONE };
 
 class ProcessorImpl : public Processor {
   private:
