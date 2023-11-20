@@ -52,23 +52,31 @@ void ProcessorImpl::executeCycle() {
     case STORE:
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+            }
         }
         break;
     case LOAD:
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+            }
         }
         break;
     case NON_MEMORY:
         nonMemCounter--;
         if (!nonMemCounter) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+            }
         }
         break;
     case MEM_ACCESS:
         break;
     }
-    cycles++;
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {

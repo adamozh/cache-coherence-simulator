@@ -27,7 +27,6 @@ class ProcessorImpl : public Processor {
     shared_ptr<Bus> bus;
 
     ProcessorState state = FREE;
-    unsigned int cycles = 0;
 
     unsigned int memCounter = 0;
     unsigned int nonMemCounter = 0;
