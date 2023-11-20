@@ -14,7 +14,7 @@ CacheResultType MESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<B
         if (mesi_debug) cout << "M/E/S: load hit" << endl;
         return CACHEHIT;
     } else if (state == I) {
-        if (mesi_debug) cout << "I: load miss" << endl;
+        if (mesi_debug) cout << "I: load miss, pushing BusRd" << endl;
         shared_ptr<Request> busRdRequest = make_shared<Request>(pid, BusRd, address);
         bus->pushRequestToBus(busRdRequest);
         return CACHEMISS;
@@ -35,13 +35,13 @@ CacheResultType MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<
         if (mesi_debug) cout << "E: store hit, change to M" << endl;
         return CACHEHIT;
     } else if (state == S) {
-        if (mesi_debug) cout << "S: store miss, push BusRdX" << endl;
+        if (mesi_debug) cout << "S: store miss, pushing BusRdX" << endl;
         // BusRdX is only processed when popped from bus
         shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
         bus->pushRequestToBus(busRdXRequest);
         return CACHEMISS;
     } else if (state == I) {
-        if (mesi_debug) cout << "I: store miss, push BusRdX" << endl;
+        if (mesi_debug) cout << "I: store miss, pushing BusRdX" << endl;
         shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
         bus->pushRequestToBus(busRdXRequest);
         return CACHEMISS;
