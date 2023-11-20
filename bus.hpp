@@ -18,4 +18,5 @@ class Bus {
     virtual void issueInvalidation(unsigned int address) = 0;
     virtual void executeCycle() = 0;
     virtual bool isCurrentRequestDone(int pid) = 0;
+    virtual void printProgress() = 0;
 };

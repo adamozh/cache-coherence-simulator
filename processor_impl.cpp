@@ -32,6 +32,14 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
     }
 }
 
+string ProcessorImpl::stringOfState() {
+    if (state == LOAD) return "LOAD";
+    if (state == STORE) return "STORE";
+    if (state == NON_MEMORY) return "NON_MEMORY";
+    if (state == MEM_ACCESS) return "MEM_ACCESS";
+    return "FREE";
+}
+
 void ProcessorImpl::executeCycle() {
     auto pair = this->stream[streamIndex];
     unsigned int type = pair.first;
@@ -94,6 +102,6 @@ void ProcessorImpl::setState(unsigned int address, State state) {
 }
 
 void ProcessorImpl::printProgressInline() {
-    cout << "[" << streamIndex << "/" << stream.size() << "]"
+    cout << "[" << streamIndex << "/" << stream.size() << "; state: " << stringOfState() << "]"
          << " ";
 }

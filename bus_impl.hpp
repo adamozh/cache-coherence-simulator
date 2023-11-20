@@ -32,4 +32,5 @@ class BusImpl : public Bus {
     bool isCurrentRequestDone(int pid);
     void executeCycle();
     virtual shared_ptr<Processor> getProcessor(int pid);
+    void printProgress();
 };

@@ -85,7 +85,7 @@ void BusImpl::processBusRd(shared_ptr<Request> request) {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;
         request->isToMemOrCache = false;
-        memRequests.push_back(request);
+        memRequests[request->pid] = request;
         currReq = nullptr;
     }
 }
@@ -141,7 +141,17 @@ void BusImpl::executeCycle() {
     }
 }
 
-shared_ptr<Processor> BusImpl::getProcessor(int pid)
-{
-    return processors[pid];
+void BusImpl::printProgress() {
+    int pid = currReq == nullptr ? -1 : currReq->pid;
+    cout << "current bus request: " << pid << endl;
+    cout << "queue size: " << busQueue.size() << endl;
+    cout << "memRequests: ";
+    for (auto r : memRequests) {
+        if (r != nullptr) {
+            cout << r->pid << " ";
+        }
+    }
+    cout << endl;
 }
+
+shared_ptr<Processor> BusImpl::getProcessor(int pid) { return processors[pid]; }

@@ -14,6 +14,9 @@ using namespace std;
 enum ProcessorState { FREE, LOAD, STORE, NON_MEMORY, MEM_ACCESS };
 
 class ProcessorImpl : public Processor {
+  private:
+    string stringOfState();
+
   public:
     int pid;
 
