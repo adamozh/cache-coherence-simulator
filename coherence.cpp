@@ -108,6 +108,7 @@ int main(int argc, char *argv[]) {
                 processors[i]->printProgressInline();
             }
             cout << endl;
+            bus->printProgress();
         }
 
         if (isDone) {
@@ -115,6 +116,7 @@ int main(int argc, char *argv[]) {
         } else {
             clock++;
         }
+        if (debug && clock == 1000) break;
     }
 
     return 0;

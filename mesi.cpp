@@ -25,11 +25,9 @@ bool MESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
 
 bool MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
                            shared_ptr<Cache> cache) {
-    if (mesi_debug) cout << "on store" << endl;
     State state = cache->getCacheLineState(address);
     if (state == M) {
         // cache hit
-        if (mesi_debug) cout << "M: store hit" << endl;
         return true;
     } else if (state == E) {
         // change cachestate to M and cache hit
@@ -38,16 +36,22 @@ bool MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
         return true;
     } else if (state == S) {
         // cache cahchestate to M and invalidate other caches
-        bus->issueInvalidation(pid);
+        if (mesi_debug) cout << "S: store hit, change to M" << endl;
+        shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
+        bus->pushRequestToBus(busRdXRequest);
         cache->updateCacheLine(address, M);
         return true;
     } else if (state == I) {
         // cachemiss, need to get from others
         // check if others have the same cacheline too
-        shared_ptr<Request> busRdRequest = make_shared<Request>(pid, BusRd, address);
-        bus->pushRequestToBus(busRdRequest);
+        if (mesi_debug) cout << "I: store miss, change to M, push BusRdX" << endl;
+        shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
+        bus->pushRequestToBus(busRdXRequest);
         // change the state to M
         cache->updateCacheLine(address, M);
+        return false;
+    } else {
+        // invalid current state
+        throw runtime_error("invalid state");
     }
-    return true;
 }
