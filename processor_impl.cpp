@@ -28,7 +28,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
         line_limit_counter++;
-        if (line_limit_counter == 10) break;
+        if (line_limit_counter == 5000) break;
     }
 }
 
@@ -83,7 +83,7 @@ void ProcessorImpl::executeCycle() {
 }
 
 void ProcessorImpl::execute(unsigned int type, unsigned int value) {
-    cout << "pid " << pid << " execute " << type << " " << value << endl;
+    cout << "EXECUTE: PROCESSOR " << pid << " execute " << type << " " << value << endl;
     CacheResultType cacheStatus;
     switch (type) {
     case 0: // load
