@@ -80,6 +80,13 @@ void BusImplDragon::executeCycle() {
 void BusImplDragon::processBusRd(shared_ptr<Request> request) {
     // need to check the line is shared
     if (dragon_bus_debug) cout << "processing BusRd" << endl;
+
+    if (request-> pid == -1){
+        // countdown of passing through the bus only
+        request->countdown = 2 * wordsPerBlock;
+        request->isToMemOrCache = false;
+        return;
+    }
     // check if any other processor has it in M state
     // sanity check : if there exists the block in M state then they need to flush it
     // otherwise, everyone who has the block MUST match memory. so 100 + 2n
@@ -109,7 +116,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
 
     cout << "processingRd"<< request->pid << endl;
     State newState = isShared ? Sc : E;
-    processors[request->pid]->setState(request->address, newState);
+    processors[request->pid]->addCacheLine(request->address, newState);
     
     if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
         // this case is 2n
@@ -159,9 +166,9 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
                 // lock cache over here
             }
         }    
-    cout << "processingUpd"<< request->pid << endl;
+    cout << "processingUpd "<< request->pid << endl;
     State newState = isShared ? Sm : M;
-    processors[request->pid]->setState(request->address, newState);
+    processors[request->pid]->addCacheLine(request->address, newState);
     // TODO: ask adam how it works
     if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
         // this case is 2n

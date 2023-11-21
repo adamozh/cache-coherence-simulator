@@ -127,12 +127,15 @@ void ProcessorImpl::addCacheLine(unsigned int address, State state){
         // this means that cache is not inside the cacheline
         if (cache->checkCacheLineFull(address)){// if address is full, then will need to invalidate cache
             //get the cacheline and then add it to the bus // TODO: ask adam
-            unsigned int old_cache_address = cache->getLRUCacheLineAddress(address);
+            unsigned int old_cacheline_address = cache->getLRUCacheLineAddress(address);
             // put into the bus to send to cache
-            // create a request
-            shared_ptr<Request> invalidateRequest = make_shared<Request>(-1,BusRd,address);
+            // create a request if it is modified state
+            State old_state = cache->getLRUCacheLineState(address);
+            if ((old_state == M)||(old_state == Sm)||(old_state == O)){
+            shared_ptr<Request> invalidateRequest = make_shared<Request>(-1,BusRd,old_cacheline_address);
             // put it into the bus
             bus->pushRequestToBus(invalidateRequest);
+            }
         }
         cache->addCacheLine(address,state); // will automatically remove LRU cache
     }
