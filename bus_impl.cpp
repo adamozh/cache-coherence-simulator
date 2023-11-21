@@ -161,6 +161,8 @@ void BusImpl::executeCycle() {
             if (currReq->isToMemOrCache) {
                 // this request is going to mem next (100)
                 memRequests[currReq->pid] = currReq;
+                currReq->countdown = 100;
+                currReq->isToMemOrCache = false;
             } else {
                 // this request is going to cache (finished the last 2n, done)
                 // sanity check: this is the only place where request is set to done
