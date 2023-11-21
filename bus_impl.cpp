@@ -85,7 +85,8 @@ void BusImpl::processBusRd(shared_ptr<Request> request) {
         p->setState(request->address, S);
     }
     State newState = isShared ? S : E;
-    processors[request->pid]->setState(request->address, newState);
+    //processors[request->pid]->setState(request->address, newState);
+    processors[request->pid]->addCacheLine(request->address, newState);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
@@ -106,9 +107,11 @@ void BusImpl::processBusRdX(shared_ptr<Request> request) {
     for (auto p : this->processors) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
-        p->setState(request->address, I); // invalidation happens here
+        //p->setState(request->address, I); // invalidation happens here
+        p->invalidateCache(request->address);
     }
-    processors[request->pid]->setState(request->address, M);
+    //processors[request->pid]->setState(request->address, M);
+    processors[request->pid]->addCacheLine(request->address, M);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
