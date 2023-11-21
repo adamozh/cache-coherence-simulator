@@ -124,20 +124,27 @@ void BusImpl::processRequest(shared_ptr<Request> request) {
 }
 
 void BusImpl::executeCycle() {
+    //ASKADAM: CHECK THE STATUS IN THE BUS AND MEMORY
+    cout << "bus: " << "busQueue.size is " << busQueue.size() << " Memqueue.size " << memRequests.size() << " curr_request " << currReq <<" "<< nullptr << " currreq equal to nullptr? " << (currReq == nullptr) << endl;
     if (currReq == nullptr && busQueue.empty() && memRequests.empty()) {
+        cout << "Nothing left on the bus and mem! Hooray!  " << endl;
         return;
     }
 
     // pop if no current request
     if (currReq == nullptr && !busQueue.empty()) {
         currReq = busQueue.front();
+        cout << "check if currReq has items inside it " << (currReq == nullptr) <<  " countdown is " << currReq-> countdown << endl;
         busQueue.pop();
+        cout << "check if currReq has items inside it again " << (currReq == nullptr) << endl;
         processRequest(currReq);
+        cout << "bus is processing request!" << endl;
     }
 
     // decrement current request if there is one
     if (currReq != nullptr) {
         currReq->countdown--;
+        cout << "sending information through the bus! Count left: "<< currReq->countdown << endl;
         if (currReq->countdown == 0) {
             if (currReq->isToMemOrCache) {
                 // this request is going to mem next (100)

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
+#include <unistd.h>
 using namespace std;
 
 ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
