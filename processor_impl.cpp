@@ -123,4 +123,5 @@ void ProcessorImpl::setState(unsigned int address, State state) {
 void ProcessorImpl::printProgressInline() {
     cout << "[" << streamIndex << "/" << stream.size() << "; state: " << stringOfState() << "]"
          << " ";
+    // usleep(100000);
 }

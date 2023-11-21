@@ -58,7 +58,7 @@ void BusImpl::issueInvalidation(unsigned int pid) {
         if (processor->getPID() == pid) {
             continue;
         }
-        processor->invalidateCache();
+        processor->invalidateCache(); // Not sure if this will send through the bus
     }
 }
 
@@ -185,7 +185,7 @@ void BusImpl::printProgress() {
         cout << "[" << r->pid << ": " << r->countdown << " " << done << "] ";
     }
     cout << endl;
-    cout << "Queue size: " << busQueue.size() << endl;
+    cout << "Queue size of bus: " << busQueue.size() << endl;
     cout << "Requests in memory: ";
     for (auto r : memRequests) {
         if (r == nullptr) continue;

@@ -27,7 +27,8 @@ void BusImplDragon::removeCacheBlocked(unsigned int indexWithTag, int pid){
 }
 
 void BusImplDragon::executeCycle() {
-    if (dragon_bus_debug) cout << "execute bus cycle" << endl;
+    if (dragon_bus_debug) cout << "execute bus cycle--" << "busqueuesize: " << busQueue.size()<<
+    " memqueueszie: " << memRequests.size() << " curr request " << (currReq == nullptr)<< endl;
     if (currReq == nullptr && busQueue.empty() && memRequests.empty()) {
         return;
     }
@@ -52,7 +53,7 @@ void BusImplDragon::executeCycle() {
                 currReq->done = true;
                 // unlock cache blocked over here.
                 if (currReq->type == BusUpd){
-                    removeCacheBlocked(currReq->address/wordsPerBlock,currReq->pid);
+                    this->removeCacheBlocked(currReq->address/wordsPerBlock,currReq->pid);
                 } 
             }
             currReq = nullptr;
@@ -93,6 +94,8 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         State pState = p->getState(request->address);
         isShared |= (pState == M || pState == E || pState == Sm || pState == Sc);
     }
+
+    
     for (auto p : this->processors) {
         State pState = p->getState(request->address);
         if (isShared){
@@ -103,8 +106,11 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
             }
         }    
     }
+
+    cout << "processingRd"<< request->pid << endl;
     State newState = isShared ? Sc : E;
     processors[request->pid]->setState(request->address, newState);
+    
     if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
         // this case is 2n
         // this request is spending 2n on the bus, and then going to memory
@@ -117,19 +123,68 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         memRequests[request->pid] = request;
         currReq = nullptr;
     }
+    
 }
 
 void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
     if (dragon_bus_debug) cout << "processing BusUpd" << endl;
+    // bool isModified = false; // used to decide where the request goes
+    // // check if the line is shared
+    // // send updated word over, this case is 2
+    // request->countdown = 2;
+    // request->isToMemOrCache = true;
+    // currReq = nullptr; // TODO: what is this used for
+    // check if any other processor has it in M state
+    // sanity check : if there exists the block in M state then they need to flush it
+    // otherwise, everyone who has the block MUST match memory. so 100 + 2n
     bool isModified = false; // used to decide where the request goes
+    bool isShared = false;   // used to decide the new state of the current processor
+    //check whether the line is shared
+    for (auto p : this->processors) {
+        //skip if the processor is the current processor
+        if (p->getPID() == request->pid){
+            continue;
+        }
+        State pState = p->getState(request->address);
+        isShared |= (pState == M || pState == E || pState == Sm || pState == Sc);
+    }
+    // check for request pid
+    if (request->pid != -1){// this will be from the I state
+    for (auto p : this->processors) {
+        State pState = p->getState(request->address);
+        if (isShared){
+                p->setState(request->address, M);
+            }else {
+                p->setState(request->address, Sm);
+                // lock cache over here
+            }
+        }    
+    cout << "processingUpd"<< request->pid << endl;
+    State newState = isShared ? Sm : M;
+    processors[request->pid]->setState(request->address, newState);
+    // TODO: ask adam how it works
+    if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
+        // this case is 2n
+        // this request is spending 2n on the bus, and then going to memory
+        request->countdown = 2 * wordsPerBlock;
+        request->isToMemOrCache = false;
+    } else {
+        // load from memory, this case is 100 + 2n
+        request->countdown = 100;
+        request->isToMemOrCache = false;
+        memRequests[request->pid] = request;
+        currReq = nullptr;
+    }
+    } else { // sending message only
+        request->countdown = 2;
+        request->isToMemOrCache = false;
+        currReq = nullptr; 
+    }
     
-    // send updated word over, this case is 2
-    request->countdown = 2;
-    request->isToMemOrCache = true;
-    currReq = nullptr; // TODO: what is this used for
 }
 
 void BusImplDragon::processRequest(shared_ptr<Request> request) {
+    cout << "This is from the dragon child class" << endl;
     if (!request->isToMemOrCache) return; // this is going back to cache, nothing to do
     if (request->type == BusRd) {
         processBusRd(request);
@@ -138,16 +193,15 @@ void BusImplDragon::processRequest(shared_ptr<Request> request) {
     }
 }
 
-void BusImplDragon::updateOtherCachesToSc(unsigned int indexWithTag,int pid){
-    auto request = currReq;
+void BusImplDragon::updateOtherCachesToSc(unsigned int address,int pid){
     for (auto p : this->processors) {
         //skip if the processor is the current processor
-        if (p->getPID() == request->pid){
+        if (p->getPID() == pid){
             continue;
         }
-        State pState = p->getState(request->address);
+        State pState = p->getState(address);
         if (pState == Sm){
-            p->setState(request->address, Sc);
+            p->setState(address, Sc);
         }
     }
 }
