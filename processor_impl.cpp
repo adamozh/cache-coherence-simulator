@@ -28,7 +28,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
         line_limit_counter++;
-        if (line_limit_counter == 10) break;
+        if (line_limit_counter == 5000) break;
     }
 }
 
@@ -36,7 +36,7 @@ string ProcessorImpl::stringOfState() {
     if (state == LOAD) return "LOAD";
     if (state == STORE) return "STORE";
     if (state == NON_MEMORY) return "NON_MEMORY";
-    if (state == MEM_ACCESS) return "MEM_ACCESS";
+    if (state == DONE) return "DONE";
     return "FREE";
 }
 
@@ -55,27 +55,43 @@ void ProcessorImpl::executeCycle() {
     case STORE:
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+                state = DONE;
+            }
         }
         break;
     case LOAD:
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+                state = DONE;
+            }
         }
         break;
     case NON_MEMORY:
         nonMemCounter--;
         if (!nonMemCounter) {
             state = FREE;
+            if (streamIndex == stream.size()) {
+                done = true;
+                state = DONE;
+            }
         }
         break;
-    case MEM_ACCESS:
+    case DONE:
         break;
     }
-    cycles++;
 }
 
+<<<<<<< HEAD
 bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
     cout << "pid " << pid << " execute " << type << " " << value << endl;
+=======
+void ProcessorImpl::execute(unsigned int type, unsigned int value) {
+    cout << "EXECUTE: PROCESSOR " << pid << " execute " << type << " " << value << endl;
+>>>>>>> f216b85c85865d90e92f9a9bb6a97d950fa8735c
     CacheResultType cacheStatus;
     switch (type) {
     case 0: // load

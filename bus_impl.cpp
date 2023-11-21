@@ -124,7 +124,6 @@ void BusImpl::processRequest(shared_ptr<Request> request) {
 }
 
 void BusImpl::executeCycle() {
-    if (bus_debug) cout << "execute bus cycle" << endl;
     if (currReq == nullptr && busQueue.empty() && memRequests.empty()) {
         return;
     }
@@ -171,16 +170,16 @@ void BusImpl::executeCycle() {
 
 void BusImpl::printProgress() {
     int pid = currReq == nullptr ? -1 : currReq->pid;
-    cout << "current bus request: " << pid << endl;
-    cout << "all current requests: ";
+    cout << "Current bus request is from processor: " << pid << endl;
+    cout << "All current requests in bus/memory: ";
     for (auto r : currentRequests) {
         if (r == nullptr) continue;
         string done = r->done ? "done" : "not done";
         cout << "[" << r->pid << ": " << r->countdown << " " << done << "] ";
     }
     cout << endl;
-    cout << "queue size: " << busQueue.size() << endl;
-    cout << "memRequests: ";
+    cout << "Queue size: " << busQueue.size() << endl;
+    cout << "Requests in memory: ";
     for (auto r : memRequests) {
         if (r == nullptr) continue;
         cout << r->pid << ":" << r->countdown << " ";
