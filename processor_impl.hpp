@@ -39,10 +39,11 @@ class ProcessorImpl : public Processor {
     ProcessorImpl(int pid, string filepath, unsigned int cacheSize, unsigned int associativity,
                   unsigned int blockSize, shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
     void executeCycle() override;
-    void invalidateCache() override;
+    void invalidateCache(unsigned int address) override;
     State getState(unsigned int address) override;
     bool isDone() override;
     void setState(unsigned int address, State state) override;
+    void addCacheLine(unsigned int address, State state) override;
     int getPID() override { return pid; };
     void printProgressInline() override;
 };

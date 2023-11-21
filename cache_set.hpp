@@ -28,11 +28,13 @@ class CacheSet {
 
     State checkCacheLineState(size_t tag);
 
-    void setCacheLineState(size_t tag, State state);
+    bool setCacheLineState(size_t tag, State state);
 
     bool checkCacheSetFull();
 
     bool isEmpty();
+
+    unsigned int size(){return cacheSet.size();}
 
     CacheLine getFirst();
 

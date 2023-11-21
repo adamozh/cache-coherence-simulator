@@ -26,7 +26,7 @@ class BusImpl : public Bus {
   public:
     BusImpl(int wordsPerBlock) : wordsPerBlock(wordsPerBlock){};
     void attachProcessor(shared_ptr<Processor> proc) override;
-    void issueInvalidation(unsigned int pid) override;
+    void issueInvalidation(unsigned int pid,unsigned int address) override;
     void pushRequestToBus(shared_ptr<Request> request) override;
     void pushRequestToMemory(shared_ptr<Request> request) override;
     bool isCurrentRequestDone(int pid) override;

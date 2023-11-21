@@ -29,6 +29,8 @@ class Cache {
 
     size_t getIndexWithTag(size_t address);
 
+    size_t reverseGeneralAddress(size_t tag,size_t index);
+
     bool checkCacheLine(size_t address);
 
     void invalidateCacheLine(size_t address);
@@ -41,7 +43,12 @@ class Cache {
 
     State getCacheLineState(size_t address);
 
-    void setCacheLineState(size_t address, State state);
+    bool setCacheLineState(size_t address, State state);
 
     State getLRUCacheLineState(size_t address);
+
+    bool checkCacheLineFull(size_t address);
+
+    unsigned int getLRUCacheLineAddress(size_t address);
+
 };

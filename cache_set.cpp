@@ -79,12 +79,14 @@ State CacheSet::checkCacheLineState(size_t tag) {
     return I; // this will be similar to invalid state
 }
 
-void CacheSet::setCacheLineState(size_t tag, State state) {
+bool CacheSet::setCacheLineState(size_t tag, State state) {
     for (auto &cacheLine : cacheSet) {
         if (cacheLine.tag == tag) {
             cacheLine.setState(state);
+            return true;
         }
     }
+    return false;
 }
 
 bool CacheSet::checkCacheSetFull() { return cacheSet.size() == maxSize; }

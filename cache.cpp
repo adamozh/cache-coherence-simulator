@@ -12,13 +12,16 @@ size_t Cache::getIndex(size_t address) {
     // this returns the index of the memory
     return (address / blockSize) % cacheSize;
 }
+size_t Cache::getTag(size_t address) { return (address / (blockSize * cacheSize)); }
 
 size_t Cache::getIndexWithTag(size_t address) {
     // this returns the index of the memory
     return address / cacheSize;
 }
 
-size_t Cache::getTag(size_t address) { return (address / (blockSize * cacheSize)); }
+size_t Cache::reverseGeneralAddress(size_t tag, size_t index){
+    return ((tag*(blockSize * cacheSize)) + (index)) * blockSize;
+}
 
 bool Cache::checkCacheLine(size_t address) {
     // get the respective address
@@ -40,7 +43,9 @@ void Cache::addCacheLine(size_t address, State state) {
     // performs a addCacheLine
     size_t index = getIndex(address);
     size_t tag = getTag(address);
+    // this will only give the tag, need to add in the address and then pad with the block size
     cache[index].addCacheLine(tag, state);
+
 }
 
 bool Cache::readCacheLine(size_t address) {
@@ -64,10 +69,10 @@ State Cache::getCacheLineState(size_t address) {
     return cache[index].checkCacheLineState(tag);
 }
 
-void Cache::setCacheLineState(size_t address, State state) {
+bool Cache::setCacheLineState(size_t address, State state) {
     size_t index = getIndex(address);
     size_t tag = getTag(address);
-    cache[index].setCacheLineState(tag, state);
+    return cache[index].setCacheLineState(tag, state);
 }
 
 State Cache::getLRUCacheLineState(size_t address) {
@@ -77,4 +82,16 @@ State Cache::getLRUCacheLineState(size_t address) {
         return cache[index].getFirst().getState();
     }
     return I;
+}
+
+bool Cache::checkCacheLineFull(size_t address){
+    size_t index = getIndex(address);
+    return associativity == cache[index].size();
+}
+
+
+unsigned int Cache::getLRUCacheLineAddress(size_t address){
+    size_t index = getIndex(address);
+    unsigned int tag = cache[index].getFirst().getTag();
+    return reverseGeneralAddress(tag,index);
 }

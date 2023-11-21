@@ -110,14 +110,32 @@ bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
     return true;
 }
 
-void ProcessorImpl::invalidateCache() {}
+void ProcessorImpl::invalidateCache(unsigned int address) {cache->invalidateCacheLine(address);}
 
 State ProcessorImpl::getState(unsigned int address) { return cache->getCacheLineState(address); }
 
 bool ProcessorImpl::isDone() { return done; }
 
 void ProcessorImpl::setState(unsigned int address, State state) {
-    cache->setCacheLineState(address, state);
+    cache->setCacheLineState(address,state);
+}
+
+void ProcessorImpl::addCacheLine(unsigned int address, State state){
+    //TODO: this function suppose to update cache if it exist else do other things
+    bool isStateSet = cache->setCacheLineState(address, state);
+    if (!isStateSet){
+        // this means that cache is not inside the cacheline
+        if (cache->checkCacheLineFull(address)){// if address is full, then will need to invalidate cache
+            //get the cacheline and then add it to the bus // TODO: ask adam
+            unsigned int old_cache_address = cache->getLRUCacheLineAddress(address);
+            // put into the bus to send to cache
+            // create a request
+            shared_ptr<Request> invalidateRequest = make_shared<Request>(-1,BusRd,address);
+            // put it into the bus
+            bus->pushRequestToBus(invalidateRequest);
+        }
+        cache->addCacheLine(address,state); // will automatically remove LRU cache
+    }
 }
 
 void ProcessorImpl::printProgressInline() {

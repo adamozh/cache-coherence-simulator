@@ -53,17 +53,26 @@ bool BusImpl::isCurrentRequestDone(int pid) {
     return currentRequests[pid]->done;
 }
 
-void BusImpl::issueInvalidation(unsigned int pid) {
+void BusImpl::issueInvalidation(unsigned int pid,unsigned int address) {
+    cout << "invalidating cache! " << endl;
     for (auto processor : this->processors) {
         if (processor->getPID() == pid) {
             continue;
         }
-        processor->invalidateCache(); // Not sure if this will send through the bus
+        processor->invalidateCache(address); // Not sure if this will send through the bus
     }
 }
 
 void BusImpl::processBusRd(shared_ptr<Request> request) {
     if (bus_debug) cout << "processing BusRd" << endl;
+
+    // if processor is -1 then just pass it through the bus and disappear
+    if (request-> pid == -1){
+        // countdown of passing through the bus only
+        request->countdown = 2 * wordsPerBlock;
+        request->isToMemOrCache = false;
+        return;
+    }
     // check if any other processor has it in M state
     // sanity check : if there exists the block in M state then they need to flush it
     // otherwise, everyone who has the block MUST match memory. so 100 + 2n
