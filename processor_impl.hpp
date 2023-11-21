@@ -34,7 +34,7 @@ class ProcessorImpl : public Processor {
 
     bool done = false;
 
-    void execute(unsigned int type, unsigned int value);
+    bool execute(unsigned int type, unsigned int value);
 
   public:
     ProcessorImpl(int pid, string filepath, unsigned int cacheSize, unsigned int associativity,

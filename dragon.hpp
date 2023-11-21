@@ -1,23 +1,25 @@
-// #pragma once
-// #include "cache.hpp"
-// #include "protocol.hpp"
-// #include <memory>
-// #include <unordered_map>
+#pragma once
+#include "cache.hpp"
+#include "protocol.hpp"
+#include <memory>
+#include <unordered_map>
+#include "cache_result_type.hpp"
 
-// using namespace std;
 
-// class DragonProtocol : public Protocol {
+using namespace std;
 
-//     public:
-//         // shared_modified stores all the processors that has shared_modified
-//         unordered_map<unsigned int, unsigned int> shared_modified;
-//         // to see if there is shared cacheline and can change to E or M as needed if not shared
-//         unordered_map<unsigned int, unsigned int> shared_cacheline;
+class DragonProtocol : public Protocol {
+
+    public:
+        // shared_modified stores all the processors that has shared_modified
+        unordered_map<unsigned int, unsigned int> shared_modified;
+        // to see if there is shared cacheline and can change to E or M as needed if not shared
+        unordered_map<unsigned int, unsigned int> shared_cacheline;
     
-//     public:
-//         CacheResultType onLoad(int pid,unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
-//         CacheResultType onStore(int pid,unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
+    public:
+        CacheResultType onLoad(int pid,unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
+        CacheResultType onStore(int pid,unsigned int address, shared_ptr<Bus> bus, shared_ptr<Cache> cache) override;
 
 
 
-// };
+};

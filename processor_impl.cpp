@@ -45,9 +45,12 @@ void ProcessorImpl::executeCycle() {
     unsigned int type = pair.first;
     unsigned int value = pair.second;
     switch (state) {
+        bool isCacheBlocked;
     case FREE:
-        execute(type, value);
-        streamIndex++;
+        isCacheBlocked = execute(type, value);// return boolean here
+        if (!isCacheBlocked){
+            streamIndex++;
+        }
         break;
     case STORE:
         if (bus->isCurrentRequestDone(pid)) {
@@ -71,25 +74,29 @@ void ProcessorImpl::executeCycle() {
     cycles++;
 }
 
-void ProcessorImpl::execute(unsigned int type, unsigned int value) {
+bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
     cout << "pid " << pid << " execute " << type << " " << value << endl;
     CacheResultType cacheStatus;
     switch (type) {
     case 0: // load
         cacheStatus = protocol->onLoad(pid, value, bus, cache);
+        if (cacheStatus == CACHEBLOCKED){
+            return false;
+        }
         state = cacheStatus == CACHEHIT ? FREE : LOAD;
-        break;
+        return true;
     case 1: // store
         cacheStatus = protocol->onStore(pid, value, bus, cache);
         state = cacheStatus == CACHEHIT ? FREE : STORE;
-        break;
+        return true;
     case 2: // non-memory instructions
         state = NON_MEMORY;
         nonMemCounter = value;
-        break;
+        return true;
     default:
         throw logic_error("invalid instruction type");
     }
+    return true;
 }
 
 void ProcessorImpl::invalidateCache() {}
