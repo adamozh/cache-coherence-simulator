@@ -9,6 +9,8 @@
 #include "processor_impl.hpp"
 #include "bus_impl_dragon.hpp"
 #include "dragon.hpp"
+#include "moesi.hpp"
+#include "bus_impl_moesi.hpp"
 #include <filesystem>
 #include <iostream>
 #include <list>
@@ -89,7 +91,13 @@ int main(int argc, char *argv[]) {
         bus = make_shared<BusImplDragon>(blockSize,associativity,cacheSize);
         protocolPtr =
             make_shared<DragonProtocol>(); // update this to initialise other protocols
-    } 
+    } else if (protocol == "MOESI"){
+        bus = make_shared<BusImplMOESI>(blockSize);
+        protocolPtr=make_shared<MOESIProtocol>();
+    } else {
+        cout << "protocol does not exist yet will sometime in the future! :)" << endl;
+        return 1;
+    }
     cout << "loading files" << endl;
     int pid = 0;
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
