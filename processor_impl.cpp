@@ -45,10 +45,10 @@ void ProcessorImpl::executeCycle() {
     unsigned int type = pair.first;
     unsigned int value = pair.second;
     switch (state) {
-        bool isCacheBlocked;
+        bool isCacheNotBlocked;
     case FREE:
-        isCacheBlocked = execute(type, value);// return boolean here
-        if (!isCacheBlocked){
+        isCacheNotBlocked = execute(type, value);// return boolean here
+        if (isCacheNotBlocked){
             streamIndex++;
         }
         break;

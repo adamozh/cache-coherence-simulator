@@ -83,11 +83,11 @@ int main(int argc, char *argv[]) {
     shared_ptr<Protocol> protocolPtr;
     if (protocol == "MESI"){
         bus = make_shared<BusImpl>(blockSize);
-        shared_ptr<Protocol> protocolPtr =
+        protocolPtr =
             make_shared<MESIProtocol>(); // update this to initialise other protocols
     } else if (protocol == "Dragon"){
         bus = make_shared<BusImplDragon>(blockSize);
-        shared_ptr<Protocol> protocolPtr =
+        protocolPtr =
             make_shared<DragonProtocol>(); // update this to initialise other protocols
     } 
     cout << "loading files" << endl;
