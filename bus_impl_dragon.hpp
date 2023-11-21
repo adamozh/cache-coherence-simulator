@@ -20,6 +20,8 @@ private: // might want to change it to protected so that the child class can acc
     //vector<shared_ptr<Request>> memRequests;
     //queue<shared_ptr<Request>> busQueue;
     // additional features
+    unsigned int associativity;
+    unsigned int cachesize;
     unordered_map<unsigned int, int> cacheBlocked;// check whether memory has been modified
     // unordered_map<unsigned int, int> processorModifiedCache;// know which processor has Sm
     
@@ -28,7 +30,7 @@ private:
     void processBusUpd(shared_ptr<Request> request);
 public:
     //void executeCycle() override;
-    BusImplDragon(int wordsPerBlock) : BusImpl(wordsPerBlock){};
+    BusImplDragon(int wordsPerBlock,unsigned int associativity,unsigned int cachesize) : BusImpl(wordsPerBlock),associativity(associativity),cachesize(cachesize / (associativity * wordsPerBlock)){};
     bool checkCacheBlocked(unsigned int indexWithTag) override;
     void addCacheBlocked(unsigned int indexWithTag, int pid) override;
     void removeCacheBlocked(unsigned int indexWithTag, int pid) override;

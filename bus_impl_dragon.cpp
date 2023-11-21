@@ -29,6 +29,12 @@ void BusImplDragon::removeCacheBlocked(unsigned int indexWithTag, int pid){
 void BusImplDragon::executeCycle() {
     if (dragon_bus_debug) cout << "execute bus cycle--" << "busqueuesize: " << busQueue.size()<<
     " memqueueszie: " << memRequests.size() << " curr request " << (currReq == nullptr)<< endl;
+    if (dragon_bus_debug){
+        for (const auto& pair : cacheBlocked) {
+        std::cout << "{" << pair.first << ": " << pair.second << "} ";
+    }
+    std::cout << std::endl;
+    }
     if (currReq == nullptr && busQueue.empty() && memRequests.empty()) {
         return;
     }
@@ -52,10 +58,10 @@ void BusImplDragon::executeCycle() {
                 // sanity check: this is the only place where request is set to done
                 currReq->done = true;
                 // unlock cache blocked over here.
-                if (currReq->type == BusUpd){
-                    this->removeCacheBlocked(currReq->address/wordsPerBlock,currReq->pid);
-                } 
+                
             }
+
+            removeCacheBlocked(currReq->address / wordsPerBlock,currReq->pid);
             currReq = nullptr;
             return;
         }
