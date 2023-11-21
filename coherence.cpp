@@ -7,6 +7,8 @@
 #include "mesi.hpp"
 #include "processor.hpp"
 #include "processor_impl.hpp"
+#include "bus_impl_dragon.hpp"
+#include "dragon.hpp"
 #include <filesystem>
 #include <iostream>
 #include <list>
@@ -47,7 +49,7 @@ int main(int argc, char *argv[]) {
     int blockSize = stoi(argv[5]);
 
     // Validate the protocol
-    if (protocol != "MESI" && protocol != "Dragon") {
+    if (protocol != "MESI" && protocol != "Dragon" && protocol != "MOESI") {
         cerr << "Invalid protocol. Choose either MESI or Dragon." << endl;
         return 1;
     }
@@ -75,12 +77,19 @@ int main(int argc, char *argv[]) {
         cout << "path is not a directory" << endl;
         return 1;
     }
-
-    shared_ptr<Bus> bus = make_shared<BusImpl>(blockSize / 4);
+    //ensure that command can accept other protocols
+    shared_ptr<Bus> bus;
     vector<shared_ptr<Processor>> processors;
-    shared_ptr<Protocol> protocolPtr =
-        make_shared<MESIProtocol>(); // update this to initialise other protocols
-
+    shared_ptr<Protocol> protocolPtr;
+    if (protocol == "MESI"){
+        shared_ptr<Bus> bus = make_shared<BusImpl>(blockSize);
+        shared_ptr<Protocol> protocolPtr =
+            make_shared<MESIProtocol>(); // update this to initialise other protocols
+    } else if (protocol == "Dragon"){
+        shared_ptr<Bus> bus = make_shared<BusImplDragon>(blockSize);
+        shared_ptr<Protocol> protocolPtr =
+            make_shared<DragonProtocol>(); // update this to initialise other protocols
+    } 
     cout << "loading files" << endl;
     int pid = 0;
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
@@ -88,6 +97,7 @@ int main(int argc, char *argv[]) {
         shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
             pid, filepath, cacheSize, associativity, blockSize, bus, protocolPtr);
         bus->attachProcessor(processor);
+        cout << "attached processor to bus" << endl;
         processors.push_back(processor);
         pid++;
         cout << "loaded files for " << filepath << endl;

@@ -28,6 +28,7 @@ private:
     void processBusUpd(shared_ptr<Request> request);
 public:
     //void executeCycle() override;
+    BusImplDragon(int wordsPerBlock) : BusImpl(wordsPerBlock){};
     bool checkCacheBlocked(unsigned int indexWithTag) override;
     void addCacheBlocked(unsigned int indexWithTag, int pid) override;
     void removeCacheBlocked(unsigned int indexWithTag, int pid) override;

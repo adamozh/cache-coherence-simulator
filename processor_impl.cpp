@@ -85,13 +85,8 @@ void ProcessorImpl::executeCycle() {
     }
 }
 
-<<<<<<< HEAD
 bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
-    cout << "pid " << pid << " execute " << type << " " << value << endl;
-=======
-void ProcessorImpl::execute(unsigned int type, unsigned int value) {
     cout << "EXECUTE: PROCESSOR " << pid << " execute " << type << " " << value << endl;
->>>>>>> f216b85c85865d90e92f9a9bb6a97d950fa8735c
     CacheResultType cacheStatus;
     switch (type) {
     case 0: // load
