@@ -5,18 +5,18 @@ Cache::Cache(size_t cacheSize, size_t associativity, size_t blockSize) {
     this->blockSize = blockSize;
     this->cache =
         std::vector<CacheSet>(cacheSize / (associativity * blockSize), CacheSet(associativity));
-    this->cacheSize = cacheSize / (associativity * blockSize); // TODO: rename this variable
+    this->cacheSize = cacheSize; // TODO: rename this variable
 }
 
 size_t Cache::getIndex(size_t address) {
     // this returns the index of the memory
-    return (address / blockSize) % cacheSize;
+    return (address / blockSize) % (cacheSize/(blockSize*associativity));
 }
-size_t Cache::getTag(size_t address) { return (address / (blockSize * cacheSize)); }
+size_t Cache::getTag(size_t address) { return (address / (cacheSize/associativity)); }
 
 size_t Cache::getIndexWithTag(size_t address) {
     // this returns the index of the memory
-    return address / cacheSize;
+    return address / (blockSize);
 }
 
 size_t Cache::reverseGeneralAddress(size_t tag, size_t index){
