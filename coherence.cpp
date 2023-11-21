@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         protocolPtr =
             make_shared<MESIProtocol>(); // update this to initialise other protocols
     } else if (protocol == "Dragon"){
-        bus = make_shared<BusImplDragon>(blockSize);
+        bus = make_shared<BusImplDragon>(blockSize,associativity,cacheSize);
         protocolPtr =
             make_shared<DragonProtocol>(); // update this to initialise other protocols
     } 

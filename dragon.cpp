@@ -52,11 +52,12 @@ CacheResultType DragonProtocol::onStore(int pid,unsigned int address, shared_ptr
             if (dragon_debug) cout << "Sc: store hit" << endl;
             cache->updateCacheLine(address,Sm);
             
-            shared_ptr<Request> busRdRequest = make_shared<Request>(-1, BusUpd, address);
-            bus->pushRequestToBus(busRdRequest);
+            
             // TODO: use bus command to change the state of other caches
             bus->updateOtherCachesToSc(address,pid);
             bus->addCacheBlocked(indexWithTag,pid);// block the cache from other modifications
+            shared_ptr<Request> busRdRequest = make_shared<Request>(-1, BusUpd, address);
+            bus->pushRequestToBus(busRdRequest);
             return CACHEHIT;
         }
         return CACHEBLOCKED;
