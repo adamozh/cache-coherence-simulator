@@ -82,11 +82,11 @@ int main(int argc, char *argv[]) {
     vector<shared_ptr<Processor>> processors;
     shared_ptr<Protocol> protocolPtr;
     if (protocol == "MESI"){
-        shared_ptr<Bus> bus = make_shared<BusImpl>(blockSize);
+        bus = make_shared<BusImpl>(blockSize);
         shared_ptr<Protocol> protocolPtr =
             make_shared<MESIProtocol>(); // update this to initialise other protocols
     } else if (protocol == "Dragon"){
-        shared_ptr<Bus> bus = make_shared<BusImplDragon>(blockSize);
+        bus = make_shared<BusImplDragon>(blockSize);
         shared_ptr<Protocol> protocolPtr =
             make_shared<DragonProtocol>(); // update this to initialise other protocols
     } 
@@ -96,6 +96,7 @@ int main(int argc, char *argv[]) {
         string filepath = entry.path().string();
         shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
             pid, filepath, cacheSize, associativity, blockSize, bus, protocolPtr);
+        cout << "current bus" << (bus == nullptr) << endl;
         bus->attachProcessor(processor);
         cout << "attached processor to bus" << endl;
         processors.push_back(processor);
