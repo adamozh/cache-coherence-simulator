@@ -6,8 +6,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <unistd.h>
+#include <vector>
 using namespace std;
 
 ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
@@ -47,8 +47,8 @@ void ProcessorImpl::executeCycle() {
     switch (state) {
         bool isCacheNotBlocked;
     case FREE:
-        isCacheNotBlocked = execute(type, value);// return boolean here
-        if (isCacheNotBlocked){
+        isCacheNotBlocked = execute(type, value); // return boolean here
+        if (isCacheNotBlocked) {
             streamIndex++;
         }
         break;
@@ -91,7 +91,7 @@ bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
     switch (type) {
     case 0: // load
         cacheStatus = protocol->onLoad(pid, value, bus, cache);
-        if (cacheStatus == CACHEBLOCKED){
+        if (cacheStatus == CACHEBLOCKED) {
             return false;
         }
         state = cacheStatus == CACHEHIT ? FREE : LOAD;
@@ -110,34 +110,36 @@ bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
     return true;
 }
 
-void ProcessorImpl::invalidateCache(unsigned int address) {cache->invalidateCacheLine(address);}
+void ProcessorImpl::invalidateCache(unsigned int address) { cache->invalidateCacheLine(address); }
 
 State ProcessorImpl::getState(unsigned int address) { return cache->getCacheLineState(address); }
 
 bool ProcessorImpl::isDone() { return done; }
 
 void ProcessorImpl::setState(unsigned int address, State state) {
-    cache->setCacheLineState(address,state);
+    cache->setCacheLineState(address, state);
 }
 
-void ProcessorImpl::addCacheLine(unsigned int address, State state){
-    //TODO: this function suppose to update cache if it exist else do other things
+void ProcessorImpl::addCacheLine(unsigned int address, State state) {
+    // TODO: this function suppose to update cache if it exist else do other things
     bool isStateSet = cache->setCacheLineState(address, state);
-    if (!isStateSet){
+    if (!isStateSet) {
         // this means that cache is not inside the cacheline
-        if (cache->checkCacheLineFull(address)){// if address is full, then will need to invalidate cache
-            //get the cacheline and then add it to the bus // TODO: ask adam
+        if (cache->checkCacheLineFull(address)) {
+            // if address is full, then will need to invalidate cache
+            // get the cacheline and then add it to the bus
             unsigned int old_cacheline_address = cache->getLRUCacheLineAddress(address);
             // put into the bus to send to cache
             // create a request if it is modified state
             State old_state = cache->getLRUCacheLineState(address);
-            if ((old_state == M)||(old_state == Sm)||(old_state == O)){
-            shared_ptr<Request> invalidateRequest = make_shared<Request>(-1,BusRd,old_cacheline_address);
-            // put it into the bus
-            bus->pushRequestToBus(invalidateRequest);
+            if ((old_state == M) || (old_state == Sm) || (old_state == O)) {
+                shared_ptr<Request> flushRequest =
+                    make_shared<Request>(-1, BusRd, old_cacheline_address);
+                // put it into the bus
+                bus->pushRequestToBus(flushRequest);
             }
         }
-        cache->addCacheLine(address,state); // will automatically remove LRU cache
+        cache->addCacheLine(address, state); // will automatically remove LRU cache
     }
 }
 

@@ -26,18 +26,13 @@ class BusImpl : public Bus {
   public:
     BusImpl(int wordsPerBlock) : wordsPerBlock(wordsPerBlock){};
     void attachProcessor(shared_ptr<Processor> proc) override;
-    void issueInvalidation(unsigned int pid,unsigned int address) override;
+    void issueInvalidation(unsigned int pid, unsigned int address) override;
     void pushRequestToBus(shared_ptr<Request> request) override;
-    void pushRequestToMemory(shared_ptr<Request> request) override;
     bool isCurrentRequestDone(int pid) override;
     void executeCycle() override;
     virtual shared_ptr<Processor> getProcessor(int pid);
     void printProgress() override;
-    // bool checkCacheBlocked(unsigned int indexWithTag) override;
-    // void addCacheBlocked(unsigned int indexWithTag, int pid)override;
-    // void removeCacheBlocked(unsigned int indexWithTag, int pid) override;
-    // void updateOtherCachesToSc(unsigned int indexWithTag, int pid) override;
-    bool checkCacheBlocked(unsigned int indexWithTag)override{return true;};
+    bool checkCacheBlocked(unsigned int indexWithTag) override { return true; };
     void addCacheBlocked(unsigned int indexWithTag, int pid) override{};
     void removeCacheBlocked(unsigned int indexWithTag, int pid) override{};
     void updateOtherCachesToSc(unsigned int indexWithTag, int pid) override{};

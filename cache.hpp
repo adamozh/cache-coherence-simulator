@@ -12,43 +12,50 @@ class CacheSet;
 class Cache {
   public:
     // deals with the LRU
-    size_t associativity;
-    size_t blockSize;
-    size_t cacheSize;
+    unsigned int associativity;
+    unsigned int blockSize;
+    unsigned int cacheSize;
+
+    unsigned int offsetBits;
+    unsigned int setIndexBits;
+    unsigned int tagBits;
+
+    unsigned int offsetMask;
+    unsigned int setIndexMask;
+
     std::vector<CacheSet> cache;
     // the cache is being split into tag, index and offset
     // offset --> blockSize
     // index --> location of the block
     // tag --> is the associated memory stored in the cache
   public:
-    Cache(size_t cacheSize, size_t associativity, size_t blockSize);
+    Cache(unsigned int cacheSize, unsigned int associativity, unsigned int blockSize);
 
-    size_t getIndex(size_t address);
+    unsigned int getIndex(unsigned int address);
 
-    size_t getTag(size_t address);
+    unsigned int getTag(unsigned int address);
 
-    size_t getIndexWithTag(size_t address);
+    unsigned int getIndexWithTag(unsigned int address);
 
-    size_t reverseGeneralAddress(size_t tag,size_t index);
+    unsigned int reverseGeneralAddress(unsigned int tag, unsigned int index);
 
-    bool checkCacheLine(size_t address);
+    bool checkCacheLine(unsigned int address);
 
-    void invalidateCacheLine(size_t address);
+    void invalidateCacheLine(unsigned int address);
 
-    void addCacheLine(size_t address, State state);
+    void addCacheLine(unsigned int address, State state);
 
-    bool readCacheLine(size_t address);
+    bool readCacheLine(unsigned int address);
 
-    bool updateCacheLine(size_t address, State state);
+    bool updateCacheLine(unsigned int address, State state);
 
-    State getCacheLineState(size_t address);
+    State getCacheLineState(unsigned int address);
 
-    bool setCacheLineState(size_t address, State state);
+    bool setCacheLineState(unsigned int address, State state);
 
-    State getLRUCacheLineState(size_t address);
+    State getLRUCacheLineState(unsigned int address);
 
-    bool checkCacheLineFull(size_t address);
+    bool checkCacheLineFull(unsigned int address);
 
-    unsigned int getLRUCacheLineAddress(size_t address);
-
+    unsigned int getLRUCacheLineAddress(unsigned int address);
 };

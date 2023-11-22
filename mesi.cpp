@@ -12,6 +12,7 @@ CacheResultType MESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<B
     State state = cache->getCacheLineState(address);
     if (state == M || state == E || state == S) {
         if (mesi_debug) cout << "M/E/S: load hit" << endl;
+        cache->updateCacheLine(address, state);
         return CACHEHIT;
     } else if (state == I) {
         if (mesi_debug) cout << "I: load miss, pushing BusRd" << endl;
@@ -29,15 +30,13 @@ CacheResultType MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<
     if (state == M) {
         // cache hit
         if (mesi_debug) cout << "M: store hit" << endl;
-        cache->updateCacheLine(address,M);
-        bus->issueInvalidation(pid,address);
+        cache->updateCacheLine(address, M); // no change in state, but set most recently used
         return CACHEHIT;
     } else if (state == E) {
         // change cachestate to M and cache hit
         if (mesi_debug) cout << "E: store hit, change to M" << endl;
         // change the state of the cache here
-        cache->updateCacheLine(address,M);
-        bus->issueInvalidation(pid,address);
+        cache->updateCacheLine(address, M);
         return CACHEHIT;
     } else if (state == S) {
         if (mesi_debug) cout << "S: store miss, pushing BusRdX" << endl;

@@ -32,17 +32,6 @@ void BusImpl::pushRequestToBus(shared_ptr<Request> request) {
     }
 }
 
-// sanity check: at least for mesi, this is not used becausae protocol/processor won't call.
-// because they haven't done any checks for whether another processor has it in M state
-// this is done internally in this class, in processBusRd and processBusRdX
-// i'll leave it here first but if you don't need this, can remove
-void BusImpl::pushRequestToMemory(shared_ptr<Request> request) {
-    memRequests.push_back(request);
-    if (request->pid != -1) {
-        currentRequests[request->pid] = request;
-    }
-}
-
 bool BusImpl::isCurrentRequestDone(int pid) {
     if (pid == -1) {
         throw runtime_error("pid shouldn't be -1");
@@ -53,7 +42,7 @@ bool BusImpl::isCurrentRequestDone(int pid) {
     return currentRequests[pid]->done;
 }
 
-void BusImpl::issueInvalidation(unsigned int pid,unsigned int address) {
+void BusImpl::issueInvalidation(unsigned int pid, unsigned int address) {
     cout << "invalidating cache! " << endl;
     for (auto processor : this->processors) {
         if (processor->getPID() == pid) {
@@ -65,14 +54,6 @@ void BusImpl::issueInvalidation(unsigned int pid,unsigned int address) {
 
 void BusImpl::processBusRd(shared_ptr<Request> request) {
     if (bus_debug) cout << "processing BusRd" << endl;
-
-    // if processor is -1 then just pass it through the bus and disappear
-    if (request-> pid == -1){
-        // countdown of passing through the bus only
-        request->countdown = 2 * wordsPerBlock;
-        request->isToMemOrCache = false;
-        return;
-    }
     // check if any other processor has it in M state
     // sanity check : if there exists the block in M state then they need to flush it
     // otherwise, everyone who has the block MUST match memory. so 100 + 2n
@@ -82,10 +63,9 @@ void BusImpl::processBusRd(shared_ptr<Request> request) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
         isShared |= (pState == M || pState == E || pState == S);
-        p->setState(request->address, S);
+        p->setState(request->address, S); // does nothing if block not in cache
     }
     State newState = isShared ? S : E;
-    //processors[request->pid]->setState(request->address, newState);
     processors[request->pid]->addCacheLine(request->address, newState);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
@@ -107,10 +87,9 @@ void BusImpl::processBusRdX(shared_ptr<Request> request) {
     for (auto p : this->processors) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
-        //p->setState(request->address, I); // invalidation happens here
+        // if M, no flush happens here, flush is simulated below
         p->invalidateCache(request->address);
     }
-    //processors[request->pid]->setState(request->address, M);
     processors[request->pid]->addCacheLine(request->address, M);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
@@ -127,6 +106,13 @@ void BusImpl::processBusRdX(shared_ptr<Request> request) {
 }
 
 void BusImpl::processRequest(shared_ptr<Request> request) {
+    // if processor is -1 then just pass it through the bus and disappear
+    if (request->pid == -1) {
+        // countdown of passing through the bus only
+        request->countdown = 2 * wordsPerBlock;
+        request->isToMemOrCache = false;
+        return;
+    }
     if (!request->isToMemOrCache) return; // this is going back to cache, nothing to do
     if (request->type == BusRd) {
         processBusRd(request);
@@ -136,27 +122,25 @@ void BusImpl::processRequest(shared_ptr<Request> request) {
 }
 
 void BusImpl::executeCycle() {
-    //ASKADAM: CHECK THE STATUS IN THE BUS AND MEMORY
-    cout << "bus: " << "busQueue.size is " << busQueue.size() << " Memqueue.size " << memRequests.size() << " curr_request " << currReq <<" "<< nullptr << " currreq equal to nullptr? " << (currReq == nullptr) << endl;
+    if (bus_debug)
+        cout << "bus: "
+             << "busQueue.size is " << busQueue.size() << " Memqueue.size " << memRequests.size()
+             << " curr_request " << currReq << " " << nullptr << " currreq equal to nullptr? "
+             << (currReq == nullptr) << endl;
     if (currReq == nullptr && busQueue.empty() && memRequests.empty()) {
-        cout << "Nothing left on the bus and mem! Hooray!  " << endl;
         return;
     }
 
     // pop if no current request
     if (currReq == nullptr && !busQueue.empty()) {
         currReq = busQueue.front();
-        cout << "check if currReq has items inside it " << (currReq == nullptr) <<  " countdown is " << currReq-> countdown << endl;
         busQueue.pop();
-        cout << "check if currReq has items inside it again " << (currReq == nullptr) << endl;
         processRequest(currReq);
-        cout << "bus is processing request!" << endl;
     }
 
     // decrement current request if there is one
     if (currReq != nullptr) {
         currReq->countdown--;
-        cout << "sending information through the bus! Count left: "<< currReq->countdown << endl;
         if (currReq->countdown == 0) {
             if (currReq->isToMemOrCache) {
                 // this request is going to mem next (100)
