@@ -15,15 +15,12 @@
 class BusImplDragon : public BusImpl {
     // Additional functionalities or modifications here
   private: // might want to change it to protected so that the child class can access the variables
-    // vector<shared_ptr<Processor>> processors;
-    // shared_ptr<Request> currReq = nullptr;
-    // vector<shared_ptr<Request>> memRequests;
-    // queue<shared_ptr<Request>> busQueue;
-    // additional features
     unsigned int associativity;
     unsigned int cachesize;
     unordered_map<unsigned int, int> cacheBlocked; // check whether memory has been modified
     // unordered_map<unsigned int, int> processorModifiedCache;// know which processor has Sm
+
+    
 
   protected:
     void processBusRd(shared_ptr<Request> request) override;
@@ -34,7 +31,7 @@ class BusImplDragon : public BusImpl {
     BusImplDragon(int wordsPerBlock, unsigned int associativity, unsigned int cachesize)
         : BusImpl(wordsPerBlock), associativity(associativity),
           cachesize(cachesize / (associativity * wordsPerBlock)){};
-    bool checkCacheBlocked(unsigned int indexWithTag) override;
+    bool checkCacheBlocked(unsigned int indexWithTag, int pid) override;
     void addCacheBlocked(unsigned int indexWithTag, int pid) override;
     void removeCacheBlocked(unsigned int indexWithTag, int pid) override;
     void updateOtherCachesToSc(unsigned int address, int pid) override;

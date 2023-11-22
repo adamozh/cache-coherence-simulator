@@ -32,7 +32,7 @@
 
 using namespace std;
 
-bool debug = false;
+bool debug = true;
 
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided

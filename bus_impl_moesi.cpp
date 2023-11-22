@@ -18,6 +18,7 @@ void BusImplMOESI::processBusRd(shared_ptr<Request> request) {
         // countdown of passing through the bus only
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
+        trafficInBytes += 4 * wordsPerBlock;
         return;
     }
     // check if any other processor has it in M state
@@ -30,21 +31,31 @@ void BusImplMOESI::processBusRd(shared_ptr<Request> request) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
         isShared |= (pState == M || pState == E || pState == S || pState == O);
-        p->setState(request->address, S);
+        if (pState == M || pState == O){
+            p->setState(request->address, O);
+        } else {
+            p->setState(request->address, S);
+        }
         isOwned |= (pState == O);
     }
     State newState = isShared ? S : E;
-    // processors[request->pid]->setState(request->address, newState);
+    if (newState == S) {
+        numShared++;
+    } else if (newState == E) {
+        numPrivate++;
+    }
     processors[request->pid]->addCacheLine(request->address, newState);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = true;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         if (isOwned) {
             request->countdown = 2 * wordsPerBlock;
             request->isToMemOrCache = false;
+            trafficInBytes += 4 * wordsPerBlock;
         } else {
             // load from memory, this case is 100 + 2n
             request->countdown = 100;
@@ -62,15 +73,20 @@ void BusImplMOESI::processBusRdX(shared_ptr<Request> request) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
         // p->setState(request->address, I); // invalidation happens here
-        p->invalidateCache(request->address);
+        bool isInvalidated = p->invalidateCache(request->address);
+        if (isInvalidated) {
+            numInvalidationsOrUpdates++;
+        }
     }
     // processors[request->pid]->setState(request->address, M);
     processors[request->pid]->addCacheLine(request->address, M);
+    numPrivate++;
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = true;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;

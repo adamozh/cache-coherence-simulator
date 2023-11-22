@@ -1,16 +1,21 @@
 
 #include "bus_impl_dragon.hpp"
+#include <unistd.h>
 
 using namespace std;
 
 bool dragon_bus_debug = true;
 
-bool BusImplDragon::checkCacheBlocked(unsigned int indexWithTag){
+bool BusImplDragon::checkCacheBlocked(unsigned int indexWithTag, int pid){
     // Find the address in the unordered_map
     auto it = cacheBlocked.find(indexWithTag);
 
     // If address is found, return true, else return false
-    return it != cacheBlocked.end();
+    if (it != cacheBlocked.end()){
+        // check if it is by the user ///TODO:
+        return cacheBlocked[indexWithTag] != pid;
+    }
+    return false;
 }
 
 void BusImplDragon::addCacheBlocked(unsigned int indexWithTag, int pid){
@@ -28,7 +33,7 @@ void BusImplDragon::removeCacheBlocked(unsigned int indexWithTag, int pid){
 
 void BusImplDragon::executeCycle() {
     if (dragon_bus_debug) cout << "execute bus cycle--" << "busqueuesize: " << busQueue.size()<<
-    " memqueueszie: " << memRequests.size() << " curr request " << (currReq == nullptr)<< endl;
+    " memqueuesize: " << memRequests.size() << " curr request " << (currReq == nullptr)<< endl;
     if (dragon_bus_debug){
         for (const auto& pair : cacheBlocked) {
         std::cout << "{" << pair.first << ": " << pair.second << "} ";
@@ -41,6 +46,7 @@ void BusImplDragon::executeCycle() {
 
     // pop if no current request
     if (currReq == nullptr && !busQueue.empty()) {
+        if  (dragon_bus_debug) cout << "from execute cycle: -- busqueue is  " << busQueue.size() << endl;
         currReq = busQueue.front();
         busQueue.pop();
         processRequest(currReq);
@@ -60,8 +66,9 @@ void BusImplDragon::executeCycle() {
                 // unlock cache blocked over here.
                 
             }
-
-            removeCacheBlocked(currReq->address / wordsPerBlock,currReq->pid);
+            if (currReq->pid == -2){
+                removeCacheBlocked(currReq->address / wordsPerBlock,currReq->pid);
+            }
             currReq = nullptr;
             return;
         }
@@ -91,8 +98,10 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         // countdown of passing through the bus only
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
+        trafficInBytes += 4 * wordsPerBlock;
         return;
     }
+    
     // check if any other processor has it in M state
     // sanity check : if there exists the block in M state then they need to flush it
     // otherwise, everyone who has the block MUST match memory. so 100 + 2n
@@ -122,6 +131,11 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
 
     cout << "processingRd"<< request->pid << endl;
     State newState = isShared ? Sc : E;
+    if (newState == Sc) {
+        numShared++;
+    } else if (newState == E) {
+        numPrivate++;
+    }
     processors[request->pid]->addCacheLine(request->address, newState);
     
     if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
@@ -129,6 +143,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;
@@ -136,11 +151,19 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         memRequests[request->pid] = request;
         currReq = nullptr;
     }
-    
+    cout << "processingRd"<< request->pid << endl;
 }
 
 void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
     if (dragon_bus_debug) cout << "processing BusUpd" << endl;
+    if (request-> pid == -2){
+
+        if (dragon_bus_debug) cout << "request does goes through here" << endl;
+        request->countdown = 2;
+        request->isToMemOrCache = false;
+        trafficInBytes += 4;
+        return;
+    }
     // bool isModified = false; // used to decide where the request goes
     // // check if the line is shared
     // // send updated word over, this case is 2
@@ -162,7 +185,7 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
         isShared |= (pState == M || pState == E || pState == Sm || pState == Sc);
     }
     // check for request pid
-    if (request->pid != -1){// this will be from the I state
+    if (request->pid != -1 && request->pid != -2){// this will be from the I state
     for (auto p : this->processors) {
         State pState = p->getState(request->address);
         if (isShared){
@@ -174,13 +197,18 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
         }    
     cout << "processingUpd "<< request->pid << endl;
     State newState = isShared ? Sm : M;
+    if (newState == Sm) {
+        numShared++;
+    } else if (newState == M) {
+        numPrivate++;
+    }
     processors[request->pid]->addCacheLine(request->address, newState);
-    // TODO: ask adam how it works
     if (isShared) { //for dragon, if its shared, it will be 2n else it will be 2n + 100
         // this case is 2n
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;

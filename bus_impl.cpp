@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool bus_debug = false;
+bool bus_debug = true;
 
 /**
  * correctness checks for implementation of bus:
@@ -27,7 +27,7 @@ void BusImpl::attachProcessor(shared_ptr<Processor> proc) {
 void BusImpl::pushRequestToBus(shared_ptr<Request> request) {
     busQueue.push(request);
     // the request is tagged to the processor for tracking. it should remain the same throughout
-    if (request->pid != -1) {
+    if (request->pid != -1 && request->pid != -2) {
         currentRequests[request->pid] = request;
     }
 }

@@ -36,7 +36,7 @@ class BusImpl : public Bus {
     bool isCurrentRequestDone(int pid) override;
     void executeCycle() override;
     virtual shared_ptr<Processor> getProcessor(int pid);
-    bool checkCacheBlocked(unsigned int indexWithTag) override { return true; };
+    bool checkCacheBlocked(unsigned int indexWithTag, int pid) override { return true; };
     void addCacheBlocked(unsigned int indexWithTag, int pid) override{};
     void removeCacheBlocked(unsigned int indexWithTag, int pid) override{};
     void updateOtherCachesToSc(unsigned int indexWithTag, int pid) override{};
