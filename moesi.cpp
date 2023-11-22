@@ -3,15 +3,14 @@
 #include "state.hpp"
 #include <stdexcept>
 
-
 using namespace std;
 
-bool moesi_debug = true;
+bool moesi_debug = false;
 
 CacheResultType MOESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
-                                     shared_ptr<Cache> cache) {
+                                      shared_ptr<Cache> cache) {
     State state = cache->getCacheLineState(address);
-    if (state == M || state == E || state == S|| state == O) {
+    if (state == M || state == E || state == S || state == O) {
         if (moesi_debug) cout << "M/E/S: load hit" << endl;
         return CACHEHIT;
     } else if (state == I) {
@@ -25,22 +24,22 @@ CacheResultType MOESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<
 }
 
 CacheResultType MOESIProtocol::onStore(int pid, unsigned int address, shared_ptr<Bus> bus,
-                                      shared_ptr<Cache> cache) {
+                                       shared_ptr<Cache> cache) {
     State state = cache->getCacheLineState(address);
     if (state == M) {
         if (moesi_debug) cout << "M: store hit" << endl;
-        cache->updateCacheLine(address,M);
-        bus->issueInvalidation(pid,address);
+        cache->updateCacheLine(address, M);
+        bus->issueInvalidation(pid, address);
         return CACHEHIT;
     } else if (state == E) {
         if (moesi_debug) cout << "E: store hit, change to M" << endl;
-        cache->updateCacheLine(address,M);
-        bus->issueInvalidation(pid,address);
+        cache->updateCacheLine(address, M);
+        bus->issueInvalidation(pid, address);
         return CACHEHIT;
-    } else if (state == O){
+    } else if (state == O) {
         if (moesi_debug) cout << "E: store hit, change to M" << endl;
-        cache->updateCacheLine(address,M);
-        bus->issueInvalidation(pid,address);
+        cache->updateCacheLine(address, M);
+        bus->issueInvalidation(pid, address);
         return CACHEHIT;
     } else if (state == S) {
         if (moesi_debug) cout << "S: store miss, pushing BusRdX" << endl;
@@ -58,3 +57,7 @@ CacheResultType MOESIProtocol::onStore(int pid, unsigned int address, shared_ptr
         throw runtime_error("invalid state");
     }
 }
+
+unsigned int MOESIProtocol::getNumShared() { return numShared; }
+
+unsigned int MOESIProtocol::getNumPrivate() { return numPrivate; }

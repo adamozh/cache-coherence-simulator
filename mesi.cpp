@@ -5,11 +5,19 @@
 
 using namespace std;
 
-bool mesi_debug = true;
+bool mesi_debug = false;
 
 CacheResultType MESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
                                      shared_ptr<Cache> cache) {
     State state = cache->getCacheLineState(address);
+    // handle counters
+    if (state == M || state == E) {
+        numPrivate++;
+    } else if (state == S) {
+        numShared++;
+    }
+
+    // actual processing
     if (state == M || state == E || state == S) {
         if (mesi_debug) cout << "M/E/S: load hit" << endl;
         cache->updateCacheLine(address, state);
@@ -30,11 +38,13 @@ CacheResultType MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<
     if (state == M) {
         // cache hit
         if (mesi_debug) cout << "M: store hit" << endl;
+        numPrivate++;
         cache->updateCacheLine(address, M); // no change in state, but set most recently used
         return CACHEHIT;
     } else if (state == E) {
         // change cachestate to M and cache hit
         if (mesi_debug) cout << "E: store hit, change to M" << endl;
+        numPrivate++;
         // change the state of the cache here
         cache->updateCacheLine(address, M);
         return CACHEHIT;
@@ -54,3 +64,7 @@ CacheResultType MESIProtocol::onStore(int pid, unsigned int address, shared_ptr<
         throw runtime_error("invalid state");
     }
 }
+
+unsigned int MESIProtocol::getNumShared() { return numShared; }
+
+unsigned int MESIProtocol::getNumPrivate() { return numPrivate; }

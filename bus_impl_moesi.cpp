@@ -6,14 +6,15 @@
 #include <memory>
 #include <queue>
 #include <stdexcept>
-#include <vector>
 #include <unistd.h>
-bool moesi_bus_debug = true;
+#include <vector>
+
+bool moesi_bus_debug = false;
+
 void BusImplMOESI::processBusRd(shared_ptr<Request> request) {
     if (moesi_bus_debug) cout << "processing BusRd from moesi" << endl;
-    usleep(5000000);
     // if processor is -1 then just pass it through the bus and disappear
-    if (request-> pid == -1){
+    if (request->pid == -1) {
         // countdown of passing through the bus only
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
@@ -33,7 +34,7 @@ void BusImplMOESI::processBusRd(shared_ptr<Request> request) {
         isOwned |= (pState == O);
     }
     State newState = isShared ? S : E;
-    //processors[request->pid]->setState(request->address, newState);
+    // processors[request->pid]->setState(request->address, newState);
     processors[request->pid]->addCacheLine(request->address, newState);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
@@ -41,11 +42,11 @@ void BusImplMOESI::processBusRd(shared_ptr<Request> request) {
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = true;
     } else {
-        if (isOwned){
+        if (isOwned) {
             request->countdown = 2 * wordsPerBlock;
             request->isToMemOrCache = false;
-        }else {
-        // load from memory, this case is 100 + 2n
+        } else {
+            // load from memory, this case is 100 + 2n
             request->countdown = 100;
             request->isToMemOrCache = false;
             memRequests[request->pid] = request;
@@ -60,10 +61,10 @@ void BusImplMOESI::processBusRdX(shared_ptr<Request> request) {
     for (auto p : this->processors) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
-        //p->setState(request->address, I); // invalidation happens here
+        // p->setState(request->address, I); // invalidation happens here
         p->invalidateCache(request->address);
     }
-    //processors[request->pid]->setState(request->address, M);
+    // processors[request->pid]->setState(request->address, M);
     processors[request->pid]->addCacheLine(request->address, M);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n

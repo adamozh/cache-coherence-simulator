@@ -1,6 +1,7 @@
 #include "processor_impl.hpp"
 #include "protocol.hpp"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -8,7 +9,10 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+
 using namespace std;
+
+int processor_debug = false;
 
 ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
                              unsigned int associativity, unsigned int blockSize,
@@ -28,7 +32,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
         line_limit_counter++;
-        if (line_limit_counter == 5000) break;
+        // if (line_limit_counter == 5000) break;
     }
 }
 
@@ -41,6 +45,7 @@ string ProcessorImpl::stringOfState() {
 }
 
 void ProcessorImpl::executeCycle() {
+    numCycles++;
     auto pair = this->stream[streamIndex];
     unsigned int type = pair.first;
     unsigned int value = pair.second;
@@ -50,9 +55,16 @@ void ProcessorImpl::executeCycle() {
         isCacheNotBlocked = execute(type, value); // return boolean here
         if (isCacheNotBlocked) {
             streamIndex++;
+        } else {
+            numIdle++;
+        }
+        if (streamIndex == stream.size()) {
+            done = true;
+            state = DONE;
         }
         break;
     case STORE:
+        numIdle++;
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
             if (streamIndex == stream.size()) {
@@ -62,6 +74,7 @@ void ProcessorImpl::executeCycle() {
         }
         break;
     case LOAD:
+        numIdle++;
         if (bus->isCurrentRequestDone(pid)) {
             state = FREE;
             if (streamIndex == stream.size()) {
@@ -71,6 +84,7 @@ void ProcessorImpl::executeCycle() {
         }
         break;
     case NON_MEMORY:
+        numComputeCycles++;
         nonMemCounter--;
         if (!nonMemCounter) {
             state = FREE;
@@ -86,31 +100,43 @@ void ProcessorImpl::executeCycle() {
 }
 
 bool ProcessorImpl::execute(unsigned int type, unsigned int value) {
-    cout << "EXECUTE: PROCESSOR " << pid << " execute " << type << " " << value << endl;
+    if (processor_debug)
+        cout << "EXECUTE: PROCESSOR " << pid << " execute " << type << " " << value << endl;
     CacheResultType cacheStatus;
     switch (type) {
     case 0: // load
         cacheStatus = protocol->onLoad(pid, value, bus, cache);
         if (cacheStatus == CACHEBLOCKED) {
             return false;
+        } else if (cacheStatus == CACHEMISS) {
+            numMiss++;
         }
+        numLoad++;
         state = cacheStatus == CACHEHIT ? FREE : LOAD;
-        return true;
+        break;
     case 1: // store
         cacheStatus = protocol->onStore(pid, value, bus, cache);
+        if (cacheStatus == CACHEBLOCKED) {
+            return false;
+        } else if (cacheStatus == CACHEMISS) {
+            numMiss++;
+        }
+        numStore++;
         state = cacheStatus == CACHEHIT ? FREE : STORE;
-        return true;
+        break;
     case 2: // non-memory instructions
         state = NON_MEMORY;
         nonMemCounter = value;
-        return true;
+        break;
     default:
         throw logic_error("invalid instruction type");
     }
     return true;
 }
 
-void ProcessorImpl::invalidateCache(unsigned int address) { cache->invalidateCacheLine(address); }
+bool ProcessorImpl::invalidateCache(unsigned int address) {
+    return cache->invalidateCacheLine(address);
+}
 
 State ProcessorImpl::getState(unsigned int address) { return cache->getCacheLineState(address); }
 
@@ -147,4 +173,16 @@ void ProcessorImpl::printProgressInline() {
     cout << "[" << streamIndex << "/" << stream.size() << "; state: " << stringOfState() << "]"
          << " ";
     // usleep(100000);
+}
+
+void ProcessorImpl::printStatistics() {
+    cout << "PROCESSOR " << pid << endl;
+    cout << "Total cycles: " << numCycles << endl;
+    cout << "Compute cycles: " << numComputeCycles << endl;
+    cout << "Total idle cycles: " << numIdle << endl;
+
+    cout << "Total load instructions: " << numLoad << endl;
+    cout << "Total store instructions: " << numStore << endl;
+    double missRate = (double)numMiss / (double)(numLoad + numStore);
+    cout << "Miss rate: " << fixed << setprecision(3) << missRate << endl;
 }

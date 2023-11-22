@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool bus_debug = true;
+bool bus_debug = false;
 
 /**
  * correctness checks for implementation of bus:
@@ -43,7 +43,7 @@ bool BusImpl::isCurrentRequestDone(int pid) {
 }
 
 void BusImpl::issueInvalidation(unsigned int pid, unsigned int address) {
-    cout << "invalidating cache! " << endl;
+    if (bus_debug) cout << "invalidating cache! " << endl;
     for (auto processor : this->processors) {
         if (processor->getPID() == pid) {
             continue;
@@ -66,12 +66,18 @@ void BusImpl::processBusRd(shared_ptr<Request> request) {
         p->setState(request->address, S); // does nothing if block not in cache
     }
     State newState = isShared ? S : E;
+    if (newState == S) {
+        numShared++;
+    } else if (newState == E) {
+        numPrivate++;
+    }
     processors[request->pid]->addCacheLine(request->address, newState);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = true;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;
@@ -88,14 +94,19 @@ void BusImpl::processBusRdX(shared_ptr<Request> request) {
         State pState = p->getState(request->address);
         isModified |= (pState == M);
         // if M, no flush happens here, flush is simulated below
-        p->invalidateCache(request->address);
+        bool isInvalidated = p->invalidateCache(request->address);
+        if (isInvalidated) {
+            numInvalidationsOrUpdates++;
+        }
     }
+    numPrivate++;
     processors[request->pid]->addCacheLine(request->address, M);
     if (isModified) {
         // flush, this case is 2n + 100 + 2n
         // this request is spending 2n on the bus, and then going to memory
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = true;
+        trafficInBytes += 4 * wordsPerBlock;
     } else {
         // load from memory, this case is 100 + 2n
         request->countdown = 100;
@@ -111,6 +122,7 @@ void BusImpl::processRequest(shared_ptr<Request> request) {
         // countdown of passing through the bus only
         request->countdown = 2 * wordsPerBlock;
         request->isToMemOrCache = false;
+        trafficInBytes += 4 * wordsPerBlock;
         return;
     }
     if (!request->isToMemOrCache) return; // this is going back to cache, nothing to do
@@ -193,3 +205,13 @@ void BusImpl::printProgress() {
 }
 
 shared_ptr<Processor> BusImpl::getProcessor(int pid) { return processors[pid]; }
+
+void BusImpl::printStatistics() {
+    cout << "BUS" << endl;
+    cout << "Traffic on the bus (in bytes): " << trafficInBytes << endl;
+    cout << "Number of invalidations/updates: " << numInvalidationsOrUpdates << endl;
+}
+
+unsigned int BusImpl::getNumShared() { return numShared; }
+
+unsigned int BusImpl::getNumPrivate() { return numPrivate; }

@@ -15,14 +15,16 @@ bool CacheSet::checkCacheLine(size_t tag) {
            }) != this->cacheSet.end();
 }
 
-void CacheSet::invalidateCacheLine(size_t tag) {
+bool CacheSet::invalidateCacheLine(size_t tag) {
     // invalidate the cacheline and remove out of the linked list
     auto it = std::find_if(this->cacheSet.begin(), this->cacheSet.end(),
                            [tag](const CacheLine &cl) { return cl.tag == tag; });
 
     if (it != this->cacheSet.end()) {
         this->cacheSet.erase(it);
+        return true;
     }
+    return false;
 }
 
 void CacheSet::addCacheLine(size_t tag, State state) {

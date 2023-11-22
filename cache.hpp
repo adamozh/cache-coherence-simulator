@@ -41,7 +41,7 @@ class Cache {
 
     bool checkCacheLine(unsigned int address);
 
-    void invalidateCacheLine(unsigned int address);
+    bool invalidateCacheLine(unsigned int address);
 
     void addCacheLine(unsigned int address, State state);
 

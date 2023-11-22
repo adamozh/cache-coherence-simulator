@@ -1,16 +1,16 @@
 #include "bus.hpp"
 #include "bus_impl.hpp"
+#include "bus_impl_dragon.hpp"
+#include "bus_impl_moesi.hpp"
 #include "cache.hpp"
 #include "cache_line.hpp"
 #include "cache_set.hpp"
+#include "dragon.hpp"
 #include "memory.cpp"
 #include "mesi.hpp"
+#include "moesi.hpp"
 #include "processor.hpp"
 #include "processor_impl.hpp"
-#include "bus_impl_dragon.hpp"
-#include "dragon.hpp"
-#include "moesi.hpp"
-#include "bus_impl_moesi.hpp"
 #include <filesystem>
 #include <iostream>
 #include <list>
@@ -32,7 +32,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
@@ -79,21 +79,19 @@ int main(int argc, char *argv[]) {
         cout << "path is not a directory" << endl;
         return 1;
     }
-    //ensure that command can accept other protocols
+    // ensure that command can accept other protocols
     shared_ptr<Bus> bus;
     vector<shared_ptr<Processor>> processors;
     shared_ptr<Protocol> protocolPtr;
-    if (protocol == "MESI"){
+    if (protocol == "MESI") {
         bus = make_shared<BusImpl>(blockSize);
-        protocolPtr =
-            make_shared<MESIProtocol>(); // update this to initialise other protocols
-    } else if (protocol == "Dragon"){
-        bus = make_shared<BusImplDragon>(blockSize,associativity,cacheSize);
-        protocolPtr =
-            make_shared<DragonProtocol>(); // update this to initialise other protocols
-    } else if (protocol == "MOESI"){
+        protocolPtr = make_shared<MESIProtocol>(); // update this to initialise other protocols
+    } else if (protocol == "Dragon") {
+        bus = make_shared<BusImplDragon>(blockSize, associativity, cacheSize);
+        protocolPtr = make_shared<DragonProtocol>(); // update this to initialise other protocols
+    } else if (protocol == "MOESI") {
         bus = make_shared<BusImplMOESI>(blockSize);
-        protocolPtr=make_shared<MOESIProtocol>();
+        protocolPtr = make_shared<MOESIProtocol>();
     } else {
         cout << "protocol does not exist yet will sometime in the future! :)" << endl;
         return 1;
@@ -111,7 +109,7 @@ int main(int argc, char *argv[]) {
         pid++;
         cout << "loaded files for " << filepath << endl;
     }
-
+    cout << "starting execution:" << endl;
     unsigned int clock = 0;
     while (true) {
         if (debug) cout << "========== CLOCK CYCLE: " << clock << " ==========" << endl;
@@ -137,6 +135,16 @@ int main(int argc, char *argv[]) {
         }
         // if (debug && clock == 1000) break;
     }
+    /*
+     * Simulation Statistics
+     */
+    cout << "=========== SIMULATION STATISTICS ===========" << endl;
+    for (auto p : processors) {
+        p->printStatistics();
+    }
+    bus->printStatistics();
+    cout << "Shared accesses: " << bus->getNumShared() + protocolPtr->getNumShared() << endl;
+    cout << "Private accesses: " << bus->getNumPrivate() + protocolPtr->getNumPrivate() << endl;
 
     return 0;
 }

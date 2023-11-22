@@ -27,11 +27,17 @@ class ProcessorImpl : public Processor {
     shared_ptr<Bus> bus;
 
     ProcessorState state = FREE;
-
-    unsigned int memCounter = 0;
     unsigned int nonMemCounter = 0;
 
     bool done = false;
+
+    // counters for statistics
+    unsigned int numCycles = 0;
+    unsigned int numComputeCycles = 0;
+    unsigned int numLoad = 0;
+    unsigned int numStore = 0;
+    unsigned int numIdle = 0;
+    unsigned int numMiss = 0;
 
     bool execute(unsigned int type, unsigned int value);
 
@@ -39,11 +45,13 @@ class ProcessorImpl : public Processor {
     ProcessorImpl(int pid, string filepath, unsigned int cacheSize, unsigned int associativity,
                   unsigned int blockSize, shared_ptr<Bus> bus, shared_ptr<Protocol> protocol);
     void executeCycle() override;
-    void invalidateCache(unsigned int address) override;
+    bool invalidateCache(unsigned int address) override;
     State getState(unsigned int address) override;
     bool isDone() override;
     void setState(unsigned int address, State state) override;
     void addCacheLine(unsigned int address, State state) override;
     int getPID() override { return pid; };
+
     void printProgressInline() override;
+    void printStatistics() override;
 };

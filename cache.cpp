@@ -42,12 +42,12 @@ bool Cache::checkCacheLine(unsigned int address) {
     return cache[index].checkCacheLine(tag);
 }
 
-void Cache::invalidateCacheLine(unsigned int address) {
+bool Cache::invalidateCacheLine(unsigned int address) {
     // performs a checkCacheLine
     // performs a invalidateCacheLine
     unsigned int index = getIndex(address);
     unsigned int tag = getTag(address);
-    cache[index].invalidateCacheLine(tag);
+    return cache[index].invalidateCacheLine(tag);
 }
 
 void Cache::addCacheLine(unsigned int address, State state) {
