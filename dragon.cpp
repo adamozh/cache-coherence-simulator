@@ -3,7 +3,7 @@
 
 using namespace std;
 
-bool dragon_debug = true;
+bool dragon_debug = false;
 
 CacheResultType DragonProtocol::onLoad(int pid, unsigned int address, shared_ptr<Bus> bus,
                                        shared_ptr<Cache> cache) {
@@ -24,7 +24,7 @@ CacheResultType DragonProtocol::onLoad(int pid, unsigned int address, shared_ptr
         // check if it is store in the dictionary, if is stored it will be stalled.
         size_t indexWithTag = cache->getIndexWithTag(address);
         bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag,pid);
-        cout << "cache is blocked for processor " << pid << "isblocked: " << isCacheBlocked << endl;
+        if (dragon_debug) cout << "cache is blocked for processor " << pid << "isblocked: " << isCacheBlocked << endl;
         if (!isCacheBlocked) {
             if (dragon_debug) cout << "Sc: load hit" << endl;
             cache->updateCacheLine(address, state);

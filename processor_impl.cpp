@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int processor_debug = true;
+int processor_debug = false;
 
 ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
                              unsigned int associativity, unsigned int blockSize,
@@ -32,7 +32,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
         line_limit_counter++;
-        if (line_limit_counter == 5000) break;
+        // if (line_limit_counter == 5000) break;
     }
 }
 

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-bool dragon_bus_debug = true;
+bool dragon_bus_debug = false;
 
 bool BusImplDragon::checkCacheBlocked(unsigned int indexWithTag, int pid){
     // Find the address in the unordered_map
@@ -129,7 +129,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         }    
     }
 
-    cout << "processingRd"<< request->pid << endl;
+    if (dragon_bus_debug) cout << "processingRd"<< request->pid << endl;
     State newState = isShared ? Sc : E;
     if (newState == Sc) {
         numShared++;
@@ -151,7 +151,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         memRequests[request->pid] = request;
         currReq = nullptr;
     }
-    cout << "processingRd"<< request->pid << endl;
+    if (dragon_bus_debug) cout << "processingRd"<< request->pid << endl;
 }
 
 void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
@@ -195,7 +195,7 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
                 // lock cache over here
             }
         }    
-    cout << "processingUpd "<< request->pid << endl;
+    if (dragon_bus_debug) cout << "processingUpd "<< request->pid << endl;
     State newState = isShared ? Sm : M;
     if (newState == Sm) {
         numShared++;
@@ -225,7 +225,7 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
 }
 
 void BusImplDragon::processRequest(shared_ptr<Request> request) {
-    cout << "This is from the dragon child class" << endl;
+    if (dragon_bus_debug) cout << "This is from the dragon child class" << endl;
     if (!request->isToMemOrCache) return; // this is going back to cache, nothing to do
     if (request->type == BusRd) {
         processBusRd(request);

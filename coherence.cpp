@@ -32,7 +32,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
         string filepath = entry.path().string();
         shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
             pid, filepath, cacheSize, associativity, blockSize, bus, protocolPtr);
-        cout << "current bus" << (bus == nullptr) << endl;
+        if (debug) cout << "current bus" << (bus == nullptr) << endl;
         bus->attachProcessor(processor);
         cout << "attached processor to bus" << endl;
         processors.push_back(processor);
