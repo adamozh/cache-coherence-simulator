@@ -124,11 +124,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         }
     }
 
-<<<<<<< HEAD
-    if (dragon_bus_debug) cout << "processingRd"<< request->pid << endl;
-=======
     if (dragon_bus_debug) cout << "processingRd" << request->pid << endl;
->>>>>>> 115829cc628210faeea2d8fd6948afe318085b5d
     State newState = isShared ? Sc : E;
     if (newState == Sc) {
         numShared++;
@@ -150,11 +146,7 @@ void BusImplDragon::processBusRd(shared_ptr<Request> request) {
         memRequests[request->pid] = request;
         currReq = nullptr;
     }
-<<<<<<< HEAD
-    if (dragon_bus_debug) cout << "processingRd"<< request->pid << endl;
-=======
     if (dragon_bus_debug) cout << "processingRd" << request->pid << endl;
->>>>>>> 115829cc628210faeea2d8fd6948afe318085b5d
 }
 
 void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
@@ -190,9 +182,8 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
             } else {
                 p->setState(request->address, Sm);
             }
-<<<<<<< HEAD
         }    
-    if (dragon_bus_debug) cout << "processingUpd "<< request->pid << endl;
+    if (dragon_bus_debug) cout << "processingUpd " << request->pid << endl;
     State newState = isShared ? Sm : M;
     if (newState == Sm) {
         numShared++;
@@ -213,30 +204,6 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
         memRequests[request->pid] = request;
         currReq = nullptr;
     }
-=======
-        }
-        if (dragon_bus_debug) cout << "processingUpd " << request->pid << endl;
-        State newState = isShared ? Sm : M;
-        if (newState == Sm) {
-            numShared++;
-        } else if (newState == M) {
-            numPrivate++;
-        }
-        processors[request->pid]->addCacheLine(request->address, newState);
-        if (isShared) { // for dragon, if its shared, it will be 2n else it will be 2n + 100
-            // this case is 2n
-            // this request is spending 2n on the bus, and then going to memory
-            request->countdown = 2 * wordsPerBlock;
-            request->isToMemOrCache = false;
-            trafficInBytes += 4 * wordsPerBlock;
-        } else {
-            // load from memory, this case is 100 + 2n
-            request->countdown = 100;
-            request->isToMemOrCache = false;
-            memRequests[request->pid] = request;
-            currReq = nullptr;
-        }
->>>>>>> 115829cc628210faeea2d8fd6948afe318085b5d
     } else { // sending message only
         request->countdown = 2;
         request->isToMemOrCache = false;
