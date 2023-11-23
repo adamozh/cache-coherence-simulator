@@ -16,7 +16,8 @@ CacheResultType MOESIProtocol::onLoad(int pid, unsigned int address, shared_ptr<
     } else if (state == S || state == O) {
         numShared++;
     }
-
+    // P1 busRd M -> O P2 PrRd I -> S P2 read from P1 directly
+    // P1 PrWr O -> M  P2-4 BusRdx S -> I
     // actual processing
     if (state == M || state == E || state == S || state == O) {
         if (moesi_debug) cout << "M/E/S: load hit" << endl;
@@ -45,20 +46,8 @@ CacheResultType MOESIProtocol::onStore(int pid, unsigned int address, shared_ptr
         numPrivate++;
         cache->updateCacheLine(address, M);
         return CACHEHIT;
-    } else if (state == O) {
-        if (moesi_debug) cout << "E: store hit, change to M" << endl;
-        numShared++;
-        cache->updateCacheLine(address, M);
-        bus->issueInvalidation(pid, address);
-        return CACHEHIT;
-    } else if (state == S) {
-        if (moesi_debug) cout << "S: store miss, pushing BusRdX" << endl;
-        // BusRdX is only processed when popped from bus
-        shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
-        bus->pushRequestToBus(busRdXRequest);
-        return CACHEMISS;
-    } else if (state == I) {
-        if (moesi_debug) cout << "I: store miss, pushing BusRdX" << endl;
+    } else if (state == I || state == S || state == O) {
+        if (moesi_debug) cout << "S/O/I: store miss, pushing BusRdX" << endl;
         shared_ptr<Request> busRdXRequest = make_shared<Request>(pid, BusRdX, address);
         bus->pushRequestToBus(busRdXRequest);
         return CACHEMISS;

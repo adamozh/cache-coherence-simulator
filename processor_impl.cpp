@@ -148,7 +148,6 @@ void ProcessorImpl::setState(unsigned int address, State state) {
 }
 
 void ProcessorImpl::addCacheLine(unsigned int address, State state) {
-    // TODO: this function suppose to update cache if it exist else do other things
     bool isStateSet = cache->setCacheLineState(address, state);
     if (!isStateSet) {
         // this means that cache is not inside the cacheline

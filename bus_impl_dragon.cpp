@@ -9,12 +9,6 @@ bool dragon_bus_debug = false;
 bool BusImplDragon::checkCacheBlocked(unsigned int indexWithTag, int pid){
     // Find the address in the unordered_map
     auto it = cacheBlocked.find(indexWithTag);
-
-    // If address is found, return true, else return false
-    if (it != cacheBlocked.end()){
-        // check if it is by the user ///TODO:
-        return cacheBlocked[indexWithTag] != pid;
-    }
     return false;
 }
 
@@ -164,13 +158,7 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
         trafficInBytes += 4;
         return;
     }
-    // bool isModified = false; // used to decide where the request goes
-    // // check if the line is shared
-    // // send updated word over, this case is 2
-    // request->countdown = 2;
-    // request->isToMemOrCache = true;
-    // currReq = nullptr; // TODO: what is this used for
-    // check if any other processor has it in M state
+
     // sanity check : if there exists the block in M state then they need to flush it
     // otherwise, everyone who has the block MUST match memory. so 100 + 2n
     bool isModified = false; // used to decide where the request goes
@@ -192,7 +180,6 @@ void BusImplDragon::processBusUpd(shared_ptr<Request> request) {
                 p->setState(request->address, M);
             }else {
                 p->setState(request->address, Sm);
-                // lock cache over here
             }
         }    
     if (dragon_bus_debug) cout << "processingUpd "<< request->pid << endl;

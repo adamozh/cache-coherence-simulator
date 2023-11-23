@@ -6,10 +6,6 @@ CacheSet::CacheSet(size_t maxSize) {
 }
 
 bool CacheSet::checkCacheLine(size_t tag) {
-    // TODO: there is a difference between read and write
-    // iterate through the link list to check if it exist
-    // return std::find(cacheSet.begin(), cacheSet.end(),
-    // CacheLine(tag,0)) != cacheSet.end();
     return std::find_if(this->cacheSet.begin(), this->cacheSet.end(), [tag](const CacheLine &cl) {
                return cl.tag == tag;
            }) != this->cacheSet.end();

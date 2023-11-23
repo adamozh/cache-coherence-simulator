@@ -20,7 +20,7 @@ CacheResultType DragonProtocol::onLoad(int pid, unsigned int address, shared_ptr
         if (dragon_debug) cout << "M/E/Sm: load hit" << endl;
         cache->updateCacheLine(address, state);
         return CACHEHIT;
-    } else if (state == Sc) {
+    } else if (state == Sc) {// ensure coherency
         // check if it is store in the dictionary, if is stored it will be stalled.
         size_t indexWithTag = cache->getIndexWithTag(address);
         bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag,pid);
@@ -73,7 +73,6 @@ CacheResultType DragonProtocol::onStore(int pid, unsigned int address, shared_pt
         if (!isCacheBlocked) {
             if (dragon_debug) cout << "Sc: store hit" << endl;
             cache->updateCacheLine(address, Sm);
-            // TODO: use bus command to change the state of other caches
             bus->updateOtherCachesToSc(address, pid);
             bus->addCacheBlocked(indexWithTag, pid); // block the cache from other modifications
             shared_ptr<Request> busRdRequest = make_shared<Request>(-2, BusUpd, address);
@@ -85,7 +84,6 @@ CacheResultType DragonProtocol::onStore(int pid, unsigned int address, shared_pt
     } else if (state == I) {
         // will also need to check whether other processors have the cache
         if (dragon_debug) cout << "I: store miss" << endl;
-        // TODO: check this
         shared_ptr<Request> busRdRequest = make_shared<Request>(pid, BusUpd, address);
         bus->pushRequestToBus(busRdRequest);
         return CACHEMISS;
