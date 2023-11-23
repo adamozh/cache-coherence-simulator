@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool bus_debug = true;
+bool bus_debug = false;
 
 /**
  * correctness checks for implementation of bus:
