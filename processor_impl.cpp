@@ -32,7 +32,7 @@ ProcessorImpl::ProcessorImpl(int pid, string filepath, unsigned int cacheSize,
         stringstream(s) >> hex >> value;
         stream.push_back(make_pair(type, value));
         line_limit_counter++;
-        // if (line_limit_counter == 5000) break;
+        // if (line_limit_counter == 1000) break;
     }
 }
 
@@ -58,7 +58,7 @@ void ProcessorImpl::executeCycle() {
         } else {
             numIdle++;
         }
-        
+
         if (streamIndex == stream.size()) {
             done = true;
             state = DONE;

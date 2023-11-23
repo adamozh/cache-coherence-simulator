@@ -11,7 +11,7 @@ CacheResultType DragonProtocol::onLoad(int pid, unsigned int address, shared_ptr
     // handle counters
     if (state == M || state == E) {
         numPrivate++;
-    } else if (state == Sm|| state == Sc) {
+    } else if (state == Sm || state == Sc) {
         numShared++;
     }
 
@@ -23,8 +23,10 @@ CacheResultType DragonProtocol::onLoad(int pid, unsigned int address, shared_ptr
     } else if (state == Sc) {// ensure coherency
         // check if it is store in the dictionary, if is stored it will be stalled.
         size_t indexWithTag = cache->getIndexWithTag(address);
-        bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag,pid);
-        if (dragon_debug) cout << "cache is blocked for processor " << pid << "isblocked: " << isCacheBlocked << endl;
+        bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag, pid);
+        if (dragon_debug)
+            cout << "cache is blocked for processor " << pid << "isblocked: " << isCacheBlocked
+                 << endl;
         if (!isCacheBlocked) {
             if (dragon_debug) cout << "Sc: load hit" << endl;
             cache->updateCacheLine(address, state);
@@ -51,7 +53,7 @@ CacheResultType DragonProtocol::onStore(int pid, unsigned int address, shared_pt
         numPrivate++;
         cache->updateCacheLine(address, state);
         return CACHEHIT;
-    } else if (state == Sm){
+    } else if (state == Sm) {
         if (dragon_debug) cout << "Sm: store hit" << endl;
         size_t indexWithTag = cache->getIndexWithTag(address);
         bus->addCacheBlocked(indexWithTag, pid); // block the cache from other modifications
@@ -69,7 +71,7 @@ CacheResultType DragonProtocol::onStore(int pid, unsigned int address, shared_pt
     } else if (state == Sc) {
         // check if it is store in the dictionary, if is stored it will be stalled.
         size_t indexWithTag = cache->getIndexWithTag(address);
-        bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag,pid);
+        bool isCacheBlocked = bus->checkCacheBlocked(indexWithTag, pid);
         if (!isCacheBlocked) {
             if (dragon_debug) cout << "Sc: store hit" << endl;
             cache->updateCacheLine(address, Sm);
