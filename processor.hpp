@@ -13,4 +13,8 @@ class Processor {
     virtual int getPID() = 0;
     virtual void printProgressInline() = 0;
     virtual void printStatistics() = 0;
+    virtual unsigned int getNumComputeCycles() = 0;
+    virtual unsigned int getNumIdle() = 0;
+    virtual unsigned int getNumLoad() = 0;
+    virtual unsigned int getNumStore() = 0;
 };

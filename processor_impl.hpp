@@ -51,7 +51,12 @@ class ProcessorImpl : public Processor {
     void setState(unsigned int address, State state) override;
     void addCacheLine(unsigned int address, State state) override;
     int getPID() override { return pid; };
+    
 
     void printProgressInline() override;
     void printStatistics() override;
+    unsigned int getNumComputeCycles()override{return numComputeCycles;};
+    unsigned int getNumIdle()override {return numIdle;};
+    unsigned int getNumLoad()override{return numLoad;};
+    unsigned int getNumStore()override{return numStore;};
 };
