@@ -18,7 +18,7 @@ class CacheSet {
 
     bool checkCacheLine(size_t tag);
 
-    void invalidateCacheLine(size_t tag);
+    bool invalidateCacheLine(size_t tag);
 
     void addCacheLine(size_t tag, State state);
 
@@ -28,11 +28,13 @@ class CacheSet {
 
     State checkCacheLineState(size_t tag);
 
-    void setCacheLineState(size_t tag, State state);
+    bool setCacheLineState(size_t tag, State state);
 
     bool checkCacheSetFull();
 
     bool isEmpty();
+
+    unsigned int size() { return cacheSet.size(); }
 
     CacheLine getFirst();
 

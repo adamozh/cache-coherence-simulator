@@ -6,23 +6,21 @@ CacheSet::CacheSet(size_t maxSize) {
 }
 
 bool CacheSet::checkCacheLine(size_t tag) {
-    // TODO: there is a difference between read and write
-    // iterate through the link list to check if it exist
-    // return std::find(cacheSet.begin(), cacheSet.end(),
-    // CacheLine(tag,0)) != cacheSet.end();
     return std::find_if(this->cacheSet.begin(), this->cacheSet.end(), [tag](const CacheLine &cl) {
                return cl.tag == tag;
            }) != this->cacheSet.end();
 }
 
-void CacheSet::invalidateCacheLine(size_t tag) {
+bool CacheSet::invalidateCacheLine(size_t tag) {
     // invalidate the cacheline and remove out of the linked list
     auto it = std::find_if(this->cacheSet.begin(), this->cacheSet.end(),
                            [tag](const CacheLine &cl) { return cl.tag == tag; });
 
     if (it != this->cacheSet.end()) {
         this->cacheSet.erase(it);
+        return true;
     }
+    return false;
 }
 
 void CacheSet::addCacheLine(size_t tag, State state) {
@@ -79,12 +77,14 @@ State CacheSet::checkCacheLineState(size_t tag) {
     return I; // this will be similar to invalid state
 }
 
-void CacheSet::setCacheLineState(size_t tag, State state) {
+bool CacheSet::setCacheLineState(size_t tag, State state) {
     for (auto &cacheLine : cacheSet) {
         if (cacheLine.tag == tag) {
             cacheLine.setState(state);
+            return true;
         }
     }
+    return false;
 }
 
 bool CacheSet::checkCacheSetFull() { return cacheSet.size() == maxSize; }

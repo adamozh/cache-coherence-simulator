@@ -1,10 +1,14 @@
 #include "bus.hpp"
 #include "bus_impl.hpp"
+#include "bus_impl_dragon.hpp"
+#include "bus_impl_moesi.hpp"
 #include "cache.hpp"
 #include "cache_line.hpp"
 #include "cache_set.hpp"
+#include "dragon.hpp"
 #include "memory.cpp"
 #include "mesi.hpp"
+#include "moesi.hpp"
 #include "processor.hpp"
 #include "processor_impl.hpp"
 #include <filesystem>
@@ -28,7 +32,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
@@ -47,8 +51,8 @@ int main(int argc, char *argv[]) {
     int blockSize = stoi(argv[5]);
 
     // Validate the protocol
-    if (protocol != "MESI" && protocol != "Dragon") {
-        cerr << "Invalid protocol. Choose either MESI or Dragon." << endl;
+    if (protocol != "MESI" && protocol != "Dragon" && protocol != "MOESI") {
+        cerr << "Invalid protocol. Choose either MESI, MOESI or Dragon." << endl;
         return 1;
     }
 
@@ -75,29 +79,42 @@ int main(int argc, char *argv[]) {
         cout << "path is not a directory" << endl;
         return 1;
     }
-
-    shared_ptr<Bus> bus = make_shared<BusImpl>(blockSize / 4);
+    // ensure that command can accept other protocols
+    shared_ptr<Bus> bus;
     vector<shared_ptr<Processor>> processors;
-    shared_ptr<Protocol> protocolPtr =
-        make_shared<MESIProtocol>(); // update this to initialise other protocols
-
+    shared_ptr<Protocol> protocolPtr;
+    if (protocol == "MESI") {
+        bus = make_shared<BusImpl>(blockSize);
+        protocolPtr = make_shared<MESIProtocol>(); // update this to initialise other protocols
+    } else if (protocol == "Dragon") {
+        bus = make_shared<BusImplDragon>(blockSize, associativity, cacheSize);
+        protocolPtr = make_shared<DragonProtocol>(); // update this to initialise other protocols
+    } else if (protocol == "MOESI") {
+        bus = make_shared<BusImplMOESI>(blockSize);
+        protocolPtr = make_shared<MOESIProtocol>();
+    } else {
+        cout << "protocol does not exist yet will sometime in the future! :)" << endl;
+        return 1;
+    }
     cout << "loading files" << endl;
     int pid = 0;
     for (const auto &entry : filesystem::directory_iterator(folderPath)) {
         string filepath = entry.path().string();
         shared_ptr<Processor> processor = make_shared<ProcessorImpl>(
             pid, filepath, cacheSize, associativity, blockSize, bus, protocolPtr);
+        if (debug) cout << "current bus" << (bus == nullptr) << endl;
         bus->attachProcessor(processor);
+        cout << "attached processor to bus" << endl;
         processors.push_back(processor);
         pid++;
         cout << "loaded files for " << filepath << endl;
     }
-
+    cout << "starting execution:" << endl;
     unsigned int clock = 0;
     while (true) {
-        if (debug) cout << "CLOCK CYCLE: " << clock << endl;
+        if (debug) cout << "========== CLOCK CYCLE: " << clock << " ==========" << endl;
         for (int i = 0; i < processors.size(); i++) {
-            processors[i]->executeCycle();
+            if (processors[i]->isDone() == false) processors[i]->executeCycle();
         }
         bus->executeCycle();
         bool isDone = all_of(processors.begin(), processors.end(),
@@ -108,6 +125,7 @@ int main(int argc, char *argv[]) {
                 processors[i]->printProgressInline();
             }
             cout << endl;
+            bus->printProgress();
         }
 
         if (isDone) {
@@ -115,7 +133,36 @@ int main(int argc, char *argv[]) {
         } else {
             clock++;
         }
+        // if (debug && clock == 1000) break;
     }
+    /*
+     * Simulation Statistics
+     */
+    cout << "=========== SIMULATION STATISTICS ===========" << endl;
+    for (auto p : processors) {
+        p->printStatistics();
+    }
+    bus->printStatistics();
+    cout << "Shared accesses: " << bus->getNumShared() + protocolPtr->getNumShared() << endl;
+    cout << "Private accesses: " << bus->getNumPrivate() + protocolPtr->getNumPrivate() << endl;
+    //compute cycles per core
+    unsigned int totalComputeCycles = 0;
+    //load instructions per core
+    unsigned int totalLoadInstructions = 0;
+    //store instructions per core
+    unsigned int totalStoreInstructions = 0;
+    //idle cycles per core
+    unsigned int totalIdleCycles = 0;
+    for (auto p: processors){
+        totalComputeCycles += p->getNumComputeCycles();
+        totalLoadInstructions += p->getNumLoad();
+        totalStoreInstructions += p->getNumStore();
+        totalIdleCycles += p->getNumIdle();
+    }
+    cout << "Number of compute cycles per core is: " << fixed << setprecision(2) << (double)totalComputeCycles/(double)4 << endl;
+    cout << "Number of load instructions per core is: " << fixed << setprecision(2) << (double)totalLoadInstructions/(double)4 << endl;
+    cout << "Number of store instructions per core is: " << fixed << setprecision(2) << (double)totalStoreInstructions/(double)4 << endl;
+    cout << "Number of idle cycles per core is: " << fixed << setprecision(2) << (double)totalIdleCycles/(double)4 << endl;
 
     return 0;
 }

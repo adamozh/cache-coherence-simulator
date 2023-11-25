@@ -8,7 +8,7 @@ class Request {
     unsigned int countdown = 0;
 
     unsigned int pid;
-    bool isToMemOrCache = false;
+    bool isToMemOrCache = true;
     TransactionType type;
     unsigned int address;
 

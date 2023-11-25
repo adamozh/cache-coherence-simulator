@@ -5,7 +5,7 @@
 #include <memory>
 using namespace std;
 
-class MESIProtocol : public Protocol {
+class MOESIProtocol : public Protocol {
   public:
     unsigned int numShared = 0;
     unsigned int numPrivate = 0;

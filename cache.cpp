@@ -1,75 +1,106 @@
 #include "cache.hpp"
+#include <cmath>
 
-Cache::Cache(size_t cacheSize, size_t associativity, size_t blockSize) {
+Cache::Cache(unsigned int cacheSize, unsigned int associativity, unsigned int blockSize) {
     this->associativity = associativity;
     this->blockSize = blockSize;
-    this->cache =
-        std::vector<CacheSet>(cacheSize / (associativity * blockSize), CacheSet(associativity));
-    this->cacheSize = cacheSize / (associativity * blockSize); // TODO: rename this variable
+    this->cacheSize = cacheSize;
+
+    // Calculate the number of bits for offset, set index, and tag
+    this->offsetBits = std::log2(blockSize);
+    int numSets = cacheSize / (blockSize * associativity);
+    this->setIndexBits = std::log2(numSets);
+    this->tagBits = 32 - (offsetBits + setIndexBits);
+
+    // Create masks for extracting set index and offset
+    unsigned int offsetMask = (1 << offsetBits) - 1;
+    unsigned int setIndexMask = ((1 << setIndexBits) - 1) << offsetBits;
+
+    this->cache = std::vector<CacheSet>(numSets, CacheSet(associativity));
 }
 
-size_t Cache::getIndex(size_t address) {
+unsigned int Cache::getIndex(unsigned int address) {
+    return (address & setIndexMask) >> offsetBits;
+}
+
+unsigned int Cache::getTag(unsigned int address) { return address >> (offsetBits + setIndexBits); }
+
+unsigned int Cache::getIndexWithTag(unsigned int address) {
     // this returns the index of the memory
-    return (address / blockSize) % cacheSize;
+    return address / (blockSize);
 }
 
-size_t Cache::getTag(size_t address) { return (address / (blockSize * cacheSize)); }
+unsigned int Cache::reverseGeneralAddress(unsigned int tag, unsigned int index) {
+    return ((tag * (blockSize * cacheSize)) + (index)) * blockSize;
+}
 
-bool Cache::checkCacheLine(size_t address) {
+bool Cache::checkCacheLine(unsigned int address) {
     // get the respective address
     // loop inside the cacheset list to find cacheline
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
     return cache[index].checkCacheLine(tag);
 }
 
-void Cache::invalidateCacheLine(size_t address) {
+bool Cache::invalidateCacheLine(unsigned int address) {
     // performs a checkCacheLine
     // performs a invalidateCacheLine
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
-    cache[index].invalidateCacheLine(tag);
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
+    return cache[index].invalidateCacheLine(tag);
 }
 
-void Cache::addCacheLine(size_t address, State state) {
+void Cache::addCacheLine(unsigned int address, State state) {
     // performs a addCacheLine
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
+    // this will only give the tag, need to add in the address and then pad with the block size
     cache[index].addCacheLine(tag, state);
 }
 
-bool Cache::readCacheLine(size_t address) {
+bool Cache::readCacheLine(unsigned int address) {
     // checkCacheLine
     // readCacheLine
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
     return cache[index].readCacheLine(tag);
 }
 
-bool Cache::updateCacheLine(size_t address, State state) {
+bool Cache::updateCacheLine(unsigned int address, State state) {
     // checkCacheLine
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
     return cache[index].updateCacheLine(tag, state);
 }
 
-State Cache::getCacheLineState(size_t address) {
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
+State Cache::getCacheLineState(unsigned int address) {
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
     return cache[index].checkCacheLineState(tag);
 }
 
-void Cache::setCacheLineState(size_t address, State state) {
-    size_t index = getIndex(address);
-    size_t tag = getTag(address);
-    cache[index].setCacheLineState(tag, state);
+bool Cache::setCacheLineState(unsigned int address, State state) {
+    unsigned int index = getIndex(address);
+    unsigned int tag = getTag(address);
+    return cache[index].setCacheLineState(tag, state);
 }
 
-State Cache::getLRUCacheLineState(size_t address) {
-    size_t index = getIndex(address);
+State Cache::getLRUCacheLineState(unsigned int address) {
+    unsigned int index = getIndex(address);
 
     if (!cache[index].isEmpty()) {
         return cache[index].getFirst().getState();
     }
     return I;
+}
+
+bool Cache::checkCacheLineFull(unsigned int address) {
+    unsigned int index = getIndex(address);
+    return associativity == cache[index].size();
+}
+
+unsigned int Cache::getLRUCacheLineAddress(unsigned int address) {
+    unsigned int index = getIndex(address);
+    unsigned int tag = cache[index].getFirst().getTag();
+    return reverseGeneralAddress(tag, index);
 }
