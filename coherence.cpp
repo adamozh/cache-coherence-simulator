@@ -2,9 +2,6 @@
 #include "bus_impl.hpp"
 #include "bus_impl_dragon.hpp"
 #include "bus_impl_moesi.hpp"
-#include "cache.hpp"
-#include "cache_line.hpp"
-#include "cache_set.hpp"
 #include "dragon.hpp"
 #include "memory.cpp"
 #include "mesi.hpp"
@@ -13,7 +10,6 @@
 #include "processor_impl.hpp"
 #include <filesystem>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -145,24 +141,28 @@ int main(int argc, char *argv[]) {
     bus->printStatistics();
     cout << "Shared accesses: " << bus->getNumShared() + protocolPtr->getNumShared() << endl;
     cout << "Private accesses: " << bus->getNumPrivate() + protocolPtr->getNumPrivate() << endl;
-    //compute cycles per core
+    // compute cycles per core
     unsigned int totalComputeCycles = 0;
-    //load instructions per core
+    // load instructions per core
     unsigned int totalLoadInstructions = 0;
-    //store instructions per core
+    // store instructions per core
     unsigned int totalStoreInstructions = 0;
-    //idle cycles per core
+    // idle cycles per core
     unsigned int totalIdleCycles = 0;
-    for (auto p: processors){
+    for (auto p : processors) {
         totalComputeCycles += p->getNumComputeCycles();
         totalLoadInstructions += p->getNumLoad();
         totalStoreInstructions += p->getNumStore();
         totalIdleCycles += p->getNumIdle();
     }
-    cout << "Number of compute cycles per core is: " << fixed << setprecision(2) << (double)totalComputeCycles/(double)4 << endl;
-    cout << "Number of load instructions per core is: " << fixed << setprecision(2) << (double)totalLoadInstructions/(double)4 << endl;
-    cout << "Number of store instructions per core is: " << fixed << setprecision(2) << (double)totalStoreInstructions/(double)4 << endl;
-    cout << "Number of idle cycles per core is: " << fixed << setprecision(2) << (double)totalIdleCycles/(double)4 << endl;
+    cout << "Number of compute cycles per core is: " << fixed << setprecision(2)
+         << (double)totalComputeCycles / (double)4 << endl;
+    cout << "Number of load instructions per core is: " << fixed << setprecision(2)
+         << (double)totalLoadInstructions / (double)4 << endl;
+    cout << "Number of store instructions per core is: " << fixed << setprecision(2)
+         << (double)totalStoreInstructions / (double)4 << endl;
+    cout << "Number of idle cycles per core is: " << fixed << setprecision(2)
+         << (double)totalIdleCycles / (double)4 << endl;
 
     return 0;
 }
